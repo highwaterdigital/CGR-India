@@ -1,0 +1,48 @@
+:root {
+  /* FONTS */
+  --font-heading: "Poppins", sans-serif;
+  --font-body: "Inter", sans-serif;
+
+  /* FOREST */
+  --forest-primary: #2E6A4A;
+  --forest-dark: #163C2A;
+  --forest-light: #8CCB6F;
+  --forest-mint: #E3F6D8;
+
+  /* EARTH */
+  --earth-brown: #8B5E3C;
+  --earth-clay: #C4A484;
+  --earth-sand: #F5EFE6;
+
+  /* SKY */
+  --sky-primary: #2F8FDB;
+  --sky-dark: #0A4F6F;
+  --sky-light: #DCECF7;
+
+  /* ACCENT */
+  --accent-gold: #D4A947;
+  --accent-orange: #FF8F3F;
+  --accent-red: #D9534F;
+
+  /* TEXT / NEUTRALS */
+  --text-primary: #1E1E1E;
+  --text-secondary: #4F4F4F;
+  --white: #FFFFFF;
+  --border-light: #EAEAEA;
+
+  /* SPACING SYSTEM */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 32px;
+  --space-xl: 64px;
+
+  /* RADIUS */
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+
+  /* SHADOWS */
+  --shadow-soft: 0 4px 20px rgba(0,0,0,0.08);
+  --shadow-medium: 0 6px 30px rgba(0,0,0,0.12);
+}

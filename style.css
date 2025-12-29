@@ -1,0 +1,36 @@
+/*
+Theme Name: CGR Advanced Theme
+Theme URI: https://www.cgrindia.org/
+Description: A modern, fully customized WordPress theme for Council for Green Revolution (CGR).
+Author: Navasakam Media
+Version: 3.0
+Template: cgr-parent
+Text Domain: cgr-child
+*/
+
+@import url("assets/css/design-system.css");
+@import url("assets/css/main.css");
+
+/* Button */
+.cgr-btn {
+    display: inline-block;
+    margin-top: 25px;
+    padding: 13px 30px;
+    background: var(--cgr-primary);
+    color: var(--cgr-white) !important; /* Override global link colors */
+    text-decoration: none;
+    font-weight: 700;
+    border: none;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+    opacity: 0; /* For animation */
+    animation: fadeInUp 1.5s ease forwards;
+}
+
+.cgr-btn:hover {
+    background: var(--cgr-accent);
+    color: var(--cgr-white) !important; /* Keep text white on hover */
+    transform: translateY(-2px);
+}

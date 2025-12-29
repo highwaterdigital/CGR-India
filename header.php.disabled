@@ -1,0 +1,285 @@
+<?php
+/**
+ * The header template for the CGR Advanced theme.
+ * FIX: Forced Full Width via Fixed Positioning & Z-Index
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+    exit;
+}
+?><!DOCTYPE html>
+<html <?php language_attributes(); ?>>
+<head>
+    <meta charset="<?php bloginfo( 'charset' ); ?>" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <?php wp_head(); ?>
+</head>
+<body <?php body_class(); ?>>
+<?php wp_body_open(); ?>
+
+<header class="site-header">
+    <div class="header-inner">
+        <div class="site-branding">
+            <?php if ( function_exists( 'the_custom_logo' ) && has_custom_logo() ) { the_custom_logo(); } else { echo '<a href="' . esc_url( home_url( '/' ) ) . '">CGR INDIA</a>'; } ?>
+        </div>
+        <button class="menu-toggle" aria-label="Toggle navigation" aria-expanded="false">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </div>
+</header>
+
+<div class="menu-backdrop" id="menu-backdrop"></div>
+<div class="menu-drawer" id="menu-drawer">
+    <div class="drawer-header">
+        <h3 class="drawer-title"></h3>
+        <button class="close-drawer" aria-label="Close navigation">&times;</button>
+    </div>
+    <div class="drawer-content">
+        <nav>
+        <?php
+        if ( has_nav_menu( 'primary' ) ) {
+            wp_nav_menu( array( 'theme_location' => 'primary', 'menu_id' => 'primary-menu', 'container' => false, 'fallback_cb' => false ) );
+        } else {
+            echo '<ul class="cgr-mobile-menu">
+                <!-- Who We Are -->
+                <li class="has-submenu">
+                    <a href="#">Who We Are <span class="submenu-toggle"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></span></a>
+                    <ul class="submenu">
+                        <li><a href="' . home_url('/about-us/') . '">About Us</a></li>
+                        <li><a href="' . home_url('/vision-mission/') . '">Vision | Mission</a></li>
+                        <li><a href="' . home_url('/people/') . '">People</a></li>
+                        <li><a href="' . home_url('/appreciations/') . '">Appreciations</a></li>
+                        <li><a href="' . home_url('/awards/') . '">Awards and recognitions</a></li>
+                    </ul>
+                </li>
+
+                <!-- Our Initiatives -->
+                <li class="has-submenu">
+                    <a href="#">Our Initiatives <span class="submenu-toggle"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></span></a>
+                    <ul class="submenu">
+                        <li><a href="' . home_url('/yelp/') . '">YELP</a></li>
+                        <li><a href="' . home_url('/earth-centre-alliance/') . '">Earth Centre Alliance</a></li>
+                        <li><a href="' . home_url('/the-earth-centre/') . '">The Earth Centre</a></li>
+                        <li><a href="' . home_url('/afforestation/') . '">Afforestation</a></li>
+                        <li><a href="' . home_url('/policy-advocacy/') . '">Policy advocacy</a></li>
+                        <li><a href="' . home_url('/grace/') . '">GrACE</a></li>
+                        <li><a href="' . home_url('/environmental-observances/') . '">Environmental Observances</a></li>
+                    </ul>
+                </li>
+
+                <!-- Gallery -->
+                <li><a href="' . home_url('/gallery/') . '">Gallery</a></li>
+
+                <!-- Resources -->
+                <li class="has-submenu">
+                    <a href="#">Resources <span class="submenu-toggle"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></span></a>
+                    <ul class="submenu">
+                        <li><a href="' . home_url('/publications/') . '">Publications</a></li>
+                        <li><a href="' . home_url('/newsletter/') . '">Newsletter</a></li>
+                        <li><a href="' . home_url('/pudami/') . '">Pudami Magazine</a></li>
+                        <li><a href="' . home_url('/annual-reports/') . '">Annual Reports</a></li>
+                        <li><a href="' . home_url('/press-media/') . '">Press and media Coverage</a></li>
+                    </ul>
+                </li>
+
+                <!-- Get Involved -->
+                <li class="has-submenu">
+                    <a href="#">Get Involved <span class="submenu-toggle"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></span></a>
+                    <ul class="submenu">
+                        <li><a href="' . home_url('/becoma-a-member/') . '">Become a Member</a></li>
+                        <li><a href="' . home_url('/volunteer-now/') . '">Volunteer Now!</a></li>
+                        <li><a href="' . home_url('/careers/') . '">Careers</a></li>
+                    </ul>
+                </li>
+
+                <!-- Partners -->
+                <li class="has-submenu">
+                    <a href="#">Partners <span class="submenu-toggle"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></span></a>
+                    <ul class="submenu">
+                        <li><a href="' . home_url('/academic-partners/') . '">Academic institutions</a></li>
+                        <li><a href="' . home_url('/organisation-partners/') . '">Other organisations</a></li>
+                    </ul>
+                </li>
+
+                <!-- Highlights -->
+                <li><a href="https://cgrindia.org/highlights/">Highlights</a></li>
+
+                <!-- Earth Leaders -->
+                <li><a href="' . home_url('/earth-leaders/') . '">Earth Leaders</a></li>
+
+                <!-- Earth Scientists -->
+                <li><a href="' . home_url('/earth-scientists/') . '">Earth Scientists</a></li>
+
+                <!-- Blog -->
+                <li><a href="' . home_url('/blog/') . '">BLOG</a></li>
+
+                <!-- Contact -->
+                <li><a href="https://cgrindia.org/contact/">Contact</a></li>
+            </ul>';
+        }
+        ?>
+        <style>
+            /* Mobile Menu Styles */
+            .cgr-mobile-menu { list-style: none; padding: 0; margin: 0; }
+            .cgr-mobile-menu li { border-bottom: 1px solid rgba(0,0,0,0.05); }
+            
+            /* Menu Item Styling */
+            .menu-drawer .cgr-mobile-menu a { 
+                display: flex; justify-content: space-between; align-items: center;
+                padding: 15px 20px; text-decoration: none; color: #333; font-weight: 600;
+                transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+                width: 100%;
+                border-left: 0px solid transparent;
+            }
+
+            /* Hover Animation & Colors */
+            .menu-drawer .cgr-mobile-menu a:hover { 
+                background: #f9f9f9; 
+                padding-left: 28px; /* Pop effect */
+                border-left-width: 5px;
+            }
+
+            /* Color Assignments for Top Level Items */
+            .cgr-mobile-menu > li:nth-child(1) > a:hover { color: #2E6B3F; border-left-color: #2E6B3F; } /* Who We Are - Green */
+            .cgr-mobile-menu > li:nth-child(2) > a:hover { color: #C49A6C; border-left-color: #C49A6C; } /* Initiatives - Gold */
+            .cgr-mobile-menu > li:nth-child(3) > a:hover { color: #e74c3c; border-left-color: #e74c3c; } /* Gallery - Red */
+            .cgr-mobile-menu > li:nth-child(4) > a:hover { color: #3498db; border-left-color: #3498db; } /* Resources - Blue */
+            .cgr-mobile-menu > li:nth-child(5) > a:hover { color: #9b59b6; border-left-color: #9b59b6; } /* Get Involved - Purple */
+            .cgr-mobile-menu > li:nth-child(6) > a:hover { color: #f39c12; border-left-color: #f39c12; } /* Partners - Orange */
+            .cgr-mobile-menu > li:nth-child(7) > a:hover { color: #1abc9c; border-left-color: #1abc9c; } /* Highlights - Teal */
+            .cgr-mobile-menu > li:nth-child(8) > a:hover { color: #27ae60; border-left-color: #27ae60; } /* Earth Leaders - Green */
+            .cgr-mobile-menu > li:nth-child(9) > a:hover { color: #2980b9; border-left-color: #2980b9; } /* Earth Scientists - Blue */
+            .cgr-mobile-menu > li:nth-child(10) > a:hover { color: #d35400; border-left-color: #d35400; } /* Blog - Pumpkin */
+            .cgr-mobile-menu > li:nth-child(11) > a:hover { color: #34495e; border-left-color: #34495e; } /* Contact - Dark */
+            
+            /* Submenu Toggle */
+            .submenu-toggle { 
+                width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;
+                border-radius: 50%; transition: transform 0.3s ease;
+                margin-left: 10px;
+            }
+            .has-submenu.open > a .submenu-toggle { transform: rotate(180deg); background: rgba(0,0,0,0.05); }
+            
+            /* Submenu Animation */
+            .submenu { 
+                max-height: 0; overflow: hidden; transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                background: #f5f7fa; padding-left: 0;
+            }
+            .has-submenu.open .submenu { max-height: 600px; }
+            .menu-drawer .submenu li a { 
+                padding-left: 35px; font-weight: 500; font-size: 0.95em; color: #555; 
+                justify-content: flex-start;
+                border-left: none !important; /* No border for submenu items */
+            }
+            .menu-drawer .submenu li a:hover {
+                padding-left: 40px; /* Smaller pop for submenu */
+                color: var(--cgr-primary, #2E6B3F);
+                background: #edf2f7;
+            }
+            .submenu li:last-child { border-bottom: none; }
+            
+            /* Icons */
+            .cgr-mobile-menu svg { stroke: currentColor; }
+        </style>
+        </nav>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const toggle = document.querySelector('.menu-toggle');
+    const close = document.querySelector('.close-drawer');
+    const drawer = document.getElementById('menu-drawer');
+    const backdrop = document.getElementById('menu-backdrop');
+    
+    function toggleMenu(forceOpen = null) {
+        const isCurrentlyOpen = drawer.classList.contains('is-open');
+        const shouldOpen = forceOpen !== null ? forceOpen : !isCurrentlyOpen;
+
+        if(shouldOpen) {
+            drawer.classList.add('is-open');
+            backdrop.classList.add('is-open');
+            document.body.style.overflow = 'hidden';
+            if(toggle){ toggle.classList.add('open'); toggle.setAttribute('aria-expanded','true'); }
+        } else {
+            drawer.classList.remove('is-open');
+            backdrop.classList.remove('is-open');
+            document.body.style.overflow = '';
+            if(toggle){ toggle.classList.remove('open'); toggle.setAttribute('aria-expanded','false'); }
+        }
+    }
+
+    if(toggle) toggle.addEventListener('click', (e) => {
+        e.preventDefault();
+        toggleMenu();
+    });
+    
+    if(close) close.addEventListener('click', () => toggleMenu(false));
+    if(backdrop) backdrop.addEventListener('click', () => toggleMenu(false));
+    
+    const links = drawer.querySelectorAll('a:not(.has-submenu > a)');
+    links.forEach(link => link.addEventListener('click', () => toggleMenu(false)));
+
+    // Accordion Logic
+    const toggles = document.querySelectorAll('.submenu-toggle');
+    toggles.forEach(toggle => {
+        toggle.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation(); // Prevent link click
+            
+            const parentLi = toggle.closest('.has-submenu');
+            const wasOpen = parentLi.classList.contains('open');
+
+            // Close all others
+            document.querySelectorAll('.has-submenu.open').forEach(item => {
+                if(item !== parentLi) item.classList.remove('open');
+            });
+
+            // Toggle current
+            if(!wasOpen) {
+                parentLi.classList.add('open');
+            } else {
+                parentLi.classList.remove('open');
+            }
+        });
+    });
+
+    // Also allow clicking the parent link text to toggle if it has a submenu
+    const parentLinks = document.querySelectorAll('.has-submenu > a');
+    parentLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            // If the link is just a placeholder (href="#"), toggle menu
+            if(link.getAttribute('href') === '#' || link.getAttribute('href') === '') {
+                e.preventDefault();
+                const toggle = link.querySelector('.submenu-toggle');
+                if(toggle) toggle.click();
+            }
+        });
+    });
+
+    // Teleport Header to Body to ensure Full Width
+    const header = document.querySelector('.site-header');
+    if(header && document.body) {
+        document.body.prepend(header);
+    }
+
+    // Scroll Effect: Home Page (Transparent over Hero, Solid after) vs Inner Pages (Always Solid)
+    function handleScroll() {
+        const header = document.querySelector('.site-header');
+        if (!header) return;
+
+        const isHome = document.body.classList.contains('home');
+        const threshold = isHome ? (window.innerHeight - 100) : 50; // Home: Wait for hero; Others: Immediate
+
+        if(window.scrollY > threshold) {
+            header.classList.add('scrolled');
+        } else {
+            header.classList.remove('scrolled');
+        }
+    }
+    window.addEventListener('scroll', handleScroll);
+    handleScroll(); // Init on load
+});
+</script>

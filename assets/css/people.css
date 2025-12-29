@@ -1,0 +1,91 @@
+.cgr-people-shell {
+    margin: 0 auto;
+    padding: 40px 0;
+}
+
+.cgr-people-section {
+    margin-bottom: 48px;
+}
+
+.cgr-people-section__heading {
+    font-size: clamp(1.8rem, 2.6vw, 2.4rem);
+    font-weight: 700;
+    color: #1c2a2d;
+    margin-bottom: 18px;
+}
+
+.cgr-people-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 24px;
+}
+
+.cgr-person-card {
+    border-radius: 24px;
+    border: 1px solid rgba(30, 68, 50, 0.1);
+    padding: 20px;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    min-height: 320px;
+    box-shadow: 0 15px 30px rgba(18, 39, 29, 0.07);
+    transition: transform 230ms ease, box-shadow 230ms ease;
+}
+
+.cgr-person-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 30px 40px rgba(18, 39, 29, 0.15);
+}
+
+.cgr-person-card__media {
+    border-radius: 16px;
+    overflow: hidden;
+    height: 140px;
+    margin-bottom: 18px;
+}
+
+.cgr-person-card__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.cgr-person-card__name {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 6px;
+    color: #0c2f20;
+}
+
+.cgr-person-card__designation {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #2b4c7e;
+    margin-bottom: 6px;
+}
+
+.cgr-person-card__organization {
+    font-size: 0.95rem;
+    color: #4a5c63;
+    margin-bottom: 12px;
+}
+
+.cgr-person-card__notes {
+    font-size: 0.9rem;
+    color: #2c3a3f;
+    line-height: 1.5;
+    flex-grow: 1;
+}
+
+@media (max-width: 1200px) {
+    .cgr-people-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .cgr-people-grid {
+        grid-template-columns: repeat(1, minmax(0, 1fr));
+    }
+}

@@ -1,0 +1,57 @@
+#cgr-gallery-metabox-container {
+    padding: 10px 0;
+}
+
+#cgr-gallery-images-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 15px 0;
+    min-height: 50px;
+    border: 2px dashed #ddd;
+    padding: 10px;
+    border-radius: 4px;
+    background: #f9f9f9;
+}
+
+.cgr-gallery-image {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    overflow: hidden;
+    cursor: move;
+    background: #fff;
+}
+
+.cgr-gallery-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.cgr-gallery-image .remove-image {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 18px;
+    height: 18px;
+    background: rgba(255, 0, 0, 0.8);
+    color: #fff;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 16px;
+    font-size: 12px;
+    cursor: pointer;
+    display: none;
+}
+
+.cgr-gallery-image:hover .remove-image {
+    display: block;
+}
+
+.cgr-gallery-actions {
+    display: flex;
+    gap: 10px;
+}

@@ -1,0 +1,127 @@
+.cgr-team-shell {
+    margin: 0 auto;
+    padding: 50px 20px 80px;
+    max-width: 1300px;
+}
+
+.cgr-team-section {
+    margin-bottom: 60px;
+}
+
+.cgr-team-section__header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.cgr-team-section__title {
+    font-size: clamp(2rem, 3vw, 2.5rem);
+    margin: 0 0 6px;
+    color: #1a2c38;
+}
+
+.cgr-team-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 28px;
+}
+
+.cgr-team-card {
+    border-radius: 22px;
+    border: 1px solid rgba(2, 58, 45, 0.1);
+    padding: 0;
+    background: #ffffff;
+    overflow: hidden;
+    box-shadow: 0 18px 35px rgba(16, 33, 28, 0.08);
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.cgr-team-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 30px 50px rgba(16, 33, 28, 0.15);
+}
+
+.cgr-team-card__image-link {
+    display: block;
+    width: 100%;
+    height: 240px;
+    overflow: hidden;
+    border-bottom: 1px solid rgba(2, 58, 45, 0.05);
+}
+
+.cgr-team-card__image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.5s ease;
+}
+
+.cgr-team-card:hover .cgr-team-card__image {
+    transform: scale(1.05);
+}
+
+.cgr-team-card__placeholder {
+    height: 240px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f3f4f6;
+}
+
+.cgr-team-card__placeholder .dashicons {
+    font-size: 50px;
+    color: #acc1cc;
+}
+
+.cgr-team-card__body {
+    padding: 22px 20px 26px;
+    text-align: center;
+}
+
+.cgr-team-card__badge {
+    display: inline-flex;
+    padding: 4px 14px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #2b4c7e;
+    background: rgba(47, 143, 219, 0.12);
+    margin-bottom: 12px;
+}
+
+.cgr-team-card__name {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #0f2f20;
+    letter-spacing: 0.1em;
+}
+
+.cgr-team-card__name a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.cgr-team-card__designation {
+    margin: 8px 0 0;
+    color: #4a5c63;
+    font-size: 0.9rem;
+    letter-spacing: 0.2px;
+    text-transform: uppercase;
+}
+
+@media (max-width: 1200px) {
+    .cgr-team-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .cgr-team-grid {
+        grid-template-columns: repeat(1, minmax(0, 1fr));
+    }
+}

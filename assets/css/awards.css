@@ -1,0 +1,188 @@
+.cgr-awards-shell {
+    margin: 0 auto;
+    padding: 40px 0;
+}
+
+.cgr-awards-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 24px;
+}
+
+.cgr-award-card {
+    background: #fff;
+    border: 1px solid rgba(30, 68, 50, 0.1);
+    border-radius: 22px;
+    padding: 28px;
+    min-height: 220px;
+    box-shadow: 0 20px 40px rgba(12, 29, 23, 0.05);
+    transition: transform 250ms ease, box-shadow 250ms ease, border-color 250ms ease;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.cgr-award-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 30px 50px rgba(12, 29, 23, 0.12);
+    border-color: rgba(47, 143, 219, 0.4);
+}
+
+.cgr-award-card__year {
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #0b3d26;
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.cgr-award-card__title {
+    font-size: clamp(1.3rem, 2.2vw, 1.6rem);
+    margin: 0 0 10px;
+    flex-grow: 1;
+    color: #1c2a2d;
+}
+
+.cgr-award-card__media {
+    border-radius: 16px;
+    overflow: hidden;
+    height: 140px;
+    margin-bottom: 18px;
+}
+
+.cgr-award-card__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.cgr-award-card__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.cgr-award-card__tag {
+    border-radius: 999px;
+    padding: 4px 12px;
+    background: rgba(47, 143, 219, 0.15);
+    color: #1b3a5a;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.cgr-award-card__issuer {
+    font-size: 0.9rem;
+    color: #4a5c63;
+    margin-top: auto;
+}
+
+.cgr-award-card__summary {
+    color: #4a5c63;
+    line-height: 1.6;
+    margin-bottom: 18px;
+}
+
+.cgr-awards-popup {
+    position: fixed;
+    inset: 0;
+    background: rgba(6, 9, 15, 0.85);
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 250ms ease;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 40px 16px;
+    z-index: 9999;
+}
+
+.cgr-awards-popup.is-open {
+    visibility: visible;
+    opacity: 1;
+}
+
+.cgr-awards-popup__content {
+    background: #fff;
+    border-radius: 20px;
+    width: min(1100px, 100%);
+    max-height: min(90vh, 1200px);
+    padding: 32px;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 35px 70px rgba(0, 0, 0, 0.25);
+}
+
+.cgr-awards-popup__close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    color: #1c2a2d;
+    cursor: pointer;
+}
+
+.cgr-awards-popup__heading {
+    font-size: clamp(1.6rem, 2.4vw, 2rem);
+    margin-bottom: 8px;
+}
+
+.cgr-awards-popup__subhead {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 0.95rem;
+    color: #4a5c63;
+}
+
+.cgr-awards-popup__detail {
+    margin-top: 18px;
+    font-size: 1rem;
+    color: #2c3a3f;
+    line-height: 1.7;
+}
+
+.cgr-awards-popup__link {
+    display: inline-flex;
+    margin-top: 20px;
+    font-weight: 600;
+    color: #2f8fdb;
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    transition: border-bottom-color 200ms ease;
+}
+
+.cgr-awards-popup__link:hover {
+    border-bottom-color: #2f8fdb;
+}
+
+.cgr-awards-popup__backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    z-index: -1;
+}
+
+body.cgr-awards-open {
+    overflow: hidden;
+}
+
+@media (max-width: 1200px) {
+    .cgr-awards-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .cgr-awards-grid {
+        grid-template-columns: repeat(1, minmax(0, 1fr));
+    }
+}

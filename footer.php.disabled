@@ -1,0 +1,212 @@
+<?php
+/**
+ * Footer template for the CGR Advanced theme.
+ * Clean & Minimal Design
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+    exit;
+}
+?>
+<!-- WRAPPER: The script at bottom will move this entire block -->
+<footer class="site-footer" id="cgr-site-footer">
+    <style>
+        /* Footer Scoped Styles */
+        #cgr-site-footer {
+            background-color: #171B2A; /* Heading Color - Dark */
+            color: #F4F4F4; /* Soft White */
+            font-family: 'Inter', sans-serif;
+            padding: 60px 0 0;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+        #cgr-site-footer a {
+            color: #F4F4F4;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        #cgr-site-footer a:hover {
+            color: #E67E22; /* Accent Orange */
+        }
+        .cgr-footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+        }
+        .cgr-footer-col h4 {
+            color: #E67E22; /* Accent Orange */
+            font-size: 16px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
+        .cgr-footer-col ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .cgr-footer-col ul li {
+            margin-bottom: 10px;
+        }
+        .cgr-footer-col ul li a {
+            display: block;
+            opacity: 0.9;
+        }
+        .cgr-footer-col ul li a:hover {
+            opacity: 1;
+            padding-left: 5px;
+        }
+        
+        /* Contact Info */
+        .cgr-contact-info p {
+            margin: 0 0 10px;
+            opacity: 0.8;
+            font-size: 14px;
+        }
+        .cgr-contact-info strong {
+            color: #fff;
+        }
+
+        /* Bottom Bar */
+        .cgr-footer-bottom {
+            background-color: #0f121c; /* Slightly darker */
+            margin-top: 60px;
+            padding: 20px 0;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            font-size: 13px;
+            color: #888;
+        }
+        .cgr-footer-bottom-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .cgr-highwater-link {
+            color: #E67E22 !important;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .cgr-footer-container {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            .cgr-footer-bottom-inner {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+
+    <div class="cgr-footer-container">
+        <!-- Column 1: Who We Are -->
+        <div class="cgr-footer-col">
+            <h4>Who We Are</h4>
+            <ul>
+                <li><a href="https://cgrindia.org/about-us/">About Us</a></li>
+                <li><a href="https://cgrindia.org/vision-mission/">Vision | Mission</a></li>
+                <li><a href="https://cgrindia.org/people/">People</a></li>
+                <li><a href="https://cgrindia.org/appreciations/">Accreditations</a></li>
+                <li><a href="https://cgrindia.org/awards/">Awards & Recognitions</a></li>
+            </ul>
+        </div>
+
+        <!-- Column 2: Our Initiatives -->
+        <div class="cgr-footer-col">
+            <h4>Our Initiatives</h4>
+            <ul>
+                <li><a href="https://cgrindia.org/yelp/">YELP</a></li>
+                <li><a href="https://cgrindia.org/earth-centre-alliance/">Earth Centre Alliance</a></li>
+                <li><a href="https://cgrindia.org/the-earth-centre/">The Earth Centre</a></li>
+                <li><a href="https://cgrindia.org/afforestation/">Afforestation</a></li>
+                <li><a href="https://cgrindia.org/policy-advocacy/">Policy Advocacy</a></li>
+                <li><a href="https://cgrindia.org/grace/">GrACE</a></li>
+                <li><a href="https://cgrindia.org/environmental-observances/">Environmental Observances</a></li>
+            </ul>
+        </div>
+
+        <!-- Column 3: Resources -->
+        <div class="cgr-footer-col">
+            <h4>Resources</h4>
+            <ul>
+                <li><a href="https://cgrindia.org/gallery/">Gallery</a></li>
+                <li><a href="https://cgrindia.org/publications/">Publications</a></li>
+                <li><a href="https://cgrindia.org/newsletter/">Newsletter</a></li>
+                <li><a href="https://cgrindia.org/pudami/">Pudami Magazine</a></li>
+                <li><a href="https://cgrindia.org/annual-reports/">Annual Reports</a></li>
+                <li><a href="https://cgrindia.org/press-media/">Press & Media Coverage</a></li>
+            </ul>
+        </div>
+
+        <!-- Column 4: Get Involved & Partners -->
+        <div class="cgr-footer-col">
+            <h4>Get Involved</h4>
+            <ul>
+                <li><a href="https://cgrindia.org/becoma-a-member/">Become a Member</a></li>
+                <li><a href="https://cgrindia.org/volunteer-now/">Volunteer Now!</a></li>
+                <li><a href="https://cgrindia.org/careers/">Careers</a></li>
+            </ul>
+            
+            <h4 style="margin-top: 30px;">Partners</h4>
+            <ul>
+                <li><a href="https://cgrindia.org/academic-partners/">Academic Institutions</a></li>
+                <li><a href="https://cgrindia.org/organisation-partners/">Other Organisations</a></li>
+            </ul>
+        </div>
+
+        <!-- Column 5: Contact & Highlights -->
+        <div class="cgr-footer-col">
+            <h4>Quick Links</h4>
+            <ul>
+                <li><a href="https://cgrindia.org/highlights/">Highlights</a></li>
+                <li><a href="https://cgrindia.org/contact/">Contact Us</a></li>
+            </ul>
+
+            <h4 style="margin-top: 30px;">Contact Info</h4>
+            <div class="cgr-contact-info">
+                <p><strong>Council for Green Revolution</strong><br>
+                1448, Street No. 17, Banjara Green Colony,<br>
+                Banjara Hills, Hyderabad, TS 500034</p>
+                <p><a href="tel:9676957000">9676957000</a><br>
+                <a href="mailto:contact@cgrindia.org">contact@cgrindia.org</a></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="cgr-footer-bottom">
+        <div class="cgr-footer-bottom-inner">
+            <div>&copy; <?php echo date('Y'); ?> Council for Green Revolution. All Rights Reserved.</div>
+            <div>
+                Designed & Developed by <a href="https://highwaterdigital.com/" target="_blank" rel="noopener" class="cgr-highwater-link">HighWater Digital</a>
+            </div>
+        </div>
+    </div>
+</footer>
+<?php wp_footer(); ?>
+
+<!-- VITAL: Script to move Footer outside of any boxed theme wrappers -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const footer = document.getElementById('cgr-site-footer');
+    if (footer && document.body) {
+        document.body.appendChild(footer);
+    }
+});
+</script>
+    if(footer && document.body) {
+        document.body.appendChild(footer); // Moves footer to end of body, ensuring full width
+    }
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,33 @@
+.wrap h1 {
+    font-size: 2em;
+    margin-bottom: 20px;
+}
+
+.form-table th {
+    font-weight: bold;
+}
+
+.form-table input[type="number"] {
+    width: 200px;
+}
+
+#cgr-visitor-counter-notice-wrapper {
+    margin-bottom: 20px;
+}
+
+.notice {
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.notice-success {
+    background-color: #dff0d8;
+    border-color: #d6e9c6;
+    color: #3c763d;
+}
+
+.notice-error {
+    background-color: #f2dede;
+    border-color: #ebccd1;
+    color: #a94442;
+}
