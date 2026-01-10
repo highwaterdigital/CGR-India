@@ -375,6 +375,11 @@ add_action('init', function() {
  * Enqueue front‑end scripts.
  */
 function cgr_fresh_enqueue_scripts() {
+    // Only load on frontend, not in admin area
+    if ( is_admin() ) {
+        return;
+    }
+
     // Enqueue Dashicons for frontend usage
     wp_enqueue_style( 'dashicons' );
 
@@ -2541,6 +2546,11 @@ add_action( 'init', 'cgr_disable_emojis' );
  * 3. SPEED BOOST: Conditional Asset Loading
  */
 function cgr_cleanup_scripts() {
+    // Only run cleanup on the frontend, not in admin
+    if ( is_admin() ) {
+        return;
+    }
+    
     // Only run this cleanup on the Front Page (Home)
     if ( is_front_page() || is_home() ) {
         wp_dequeue_script( 'contact-form-7' );
@@ -2553,6 +2563,11 @@ add_action( 'wp_enqueue_scripts', 'cgr_cleanup_scripts', 100 );
  * 4. PERFORMANCE: Remove Query Strings
  */
 function cgr_remove_script_version( $src ) {
+    // Only remove version strings on frontend, not in admin
+    if ( is_admin() ) {
+        return $src;
+    }
+    
     $parts = explode( '?ver', $src ); 
     return $parts[0];
 }
