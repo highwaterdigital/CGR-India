@@ -58,21 +58,41 @@ html, body {
 }
 .cgr-table-hero h1 { color: var(--white); margin-bottom: 10px; }
 .cgr-table-hero p { color: rgba(255,255,255,0.9); margin: 0 auto 20px; max-width: 720px; }
+
+/* Directory Stats (visible on white background) */
+.cgr-directory-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 18px;
+}
+
 .cgr-table-stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 12px;
-  margin-top: 10px;
+  gap: 16px;
+  margin: 30px 0 20px;
 }
 .cgr-table-stats .stat {
-  background: rgba(255,255,255,0.12);
-  border: 1px solid rgba(255,255,255,0.25);
-  border-radius: 10px;
-  padding: 12px 14px;
-  text-align: left;
+  background: linear-gradient(135deg, var(--forest-dark) 0%, #1a5c3a 100%);
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 12px;
+  padding: 16px 18px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
-.cgr-table-stats .label { display: block; font-size: 0.85rem; opacity: 0.85; }
-.cgr-table-stats .value { font-size: 1.4rem; font-weight: 800; }
+.cgr-table-stats .label { 
+  display: block; 
+  font-size: 0.85rem; 
+  color: rgba(255,255,255,0.85);
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+.cgr-table-stats .value { 
+  display: block;
+  font-size: 1.8rem; 
+  font-weight: 800;
+  color: var(--white);
+}
 
 .cgr-table-shell {
   max-width: 1200px;
@@ -102,20 +122,39 @@ html, body {
   border-radius: 10px;
   padding: 8px 10px 8px 12px;
   background: var(--white);
+  position: relative;
+}
+.cgr-search-field .dashicons {
+  flex-shrink: 0;
+  color: var(--text-secondary);
 }
 .cgr-search-field input {
-  width: 100%;
+  flex: 1;
   border: none;
   outline: none;
   font-size: 1rem;
   padding: 6px 4px;
 }
-.cgr-search-field button {
+.cgr-search-field button#cgr-clear-search {
+  flex-shrink: 0;
   border: none;
-  background: transparent;
+  background: var(--text-secondary);
+  color: var(--white);
   font-size: 1.2rem;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
   cursor: pointer;
-  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+  transition: all 0.2s ease;
+}
+.cgr-search-field button#cgr-clear-search:hover {
+  background: var(--accent-orange);
+  transform: scale(1.1);
 }
 .cgr-sort-field {
   display: flex;
@@ -173,11 +212,21 @@ html, body {
 }
 
 @media (max-width: 768px) {
-  .cgr-table-shell { margin-top: -20px; }
+  .cgr-table-shell { margin-top: 0; }
   .cgr-table-controls { flex-direction: column; align-items: stretch; }
   .cgr-sort-field { justify-content: space-between; }
   .cgr-data-table th, .cgr-data-table td { padding: 10px 12px; }
-  .cgr-table-stats { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .cgr-table-stats { 
+    grid-template-columns: repeat(2, minmax(0,1fr)); 
+    gap: 12px;
+    margin: 20px 0 16px;
+  }
+  .cgr-table-stats .stat {
+    padding: 14px 12px;
+  }
+  .cgr-table-stats .value {
+    font-size: 1.5rem;
+  }
 }
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading);
