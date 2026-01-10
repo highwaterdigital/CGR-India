@@ -531,6 +531,15 @@ function cgr_earth_leaders_directory_shortcode() {
         const visibleCount = document.getElementById('cgr-visible-count');
         const totalCount = document.getElementById('cgr-total-count');
 
+        // Toggle clear button visibility
+        function toggleClearButton() {
+            if (searchInput.value.trim()) {
+                clearBtn.classList.add('visible');
+            } else {
+                clearBtn.classList.remove('visible');
+            }
+        }
+
         function getValue(row, key) {
             const raw = row.dataset[key] || '';
             if (key === 'year') {
@@ -582,6 +591,8 @@ function cgr_earth_leaders_directory_shortcode() {
                 tr.appendChild(td);
                 tbody.appendChild(tr);
             }
+            
+            toggleClearButton();
         }
 
         searchInput.addEventListener('input', applyFilters);
@@ -593,6 +604,9 @@ function cgr_earth_leaders_directory_shortcode() {
         });
 
         sortSelect.addEventListener('change', applyFilters);
+        
+        // Initial toggle
+        toggleClearButton();
     });
     </script>
     <?php
