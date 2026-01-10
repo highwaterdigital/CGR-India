@@ -1,6 +1,6 @@
 /**
  * Earth Leaders Directory JavaScript
- * Handles search, filter, and sort functionality
+ * Handles search, filter, sort, and load more functionality
  */
 
 (function() {
@@ -21,6 +21,7 @@
         const resetBtn = document.getElementById('cgr-reset-filters');
         const visibleCount = document.getElementById('cgr-visible-count');
         const totalCount = document.getElementById('cgr-total-count');
+        const loadMoreBtn = document.getElementById('cgr-load-more');
 
         // Validate elements exist
         if (!searchInput || !table || !tbody) {
@@ -28,13 +29,43 @@
             return;
         }
 
-        // Get all rows (excluding any template rows)
-        let allRows = Array.from(tbody.querySelectorAll('tr'));
+        // Get all rows
+        let allRows = Array.from(tbody.querySelectorAll('.cgr-leader-row'));
         const totalRows = allRows.length;
+        let currentlyLoaded = 100;
 
         // Initialize
         if (totalCount) {
             totalCount.textContent = totalRows;
+        }
+
+        /**
+         * Load more rows
+         */
+        function loadMoreRows() {
+            const hiddenRows = tbody.querySelectorAll('.cgr-hidden-row');
+            const toLoad = Math.min(100, hiddenRows.length);
+            
+            for (let i = 0; i < toLoad; i++) {
+                hiddenRows[i].classList.remove('cgr-hidden-row');
+                hiddenRows[i].style.display = '';
+            }
+            
+            currentlyLoaded += toLoad;
+            allRows = Array.from(tbody.querySelectorAll('.cgr-leader-row'));
+            
+            // Update button
+            if (loadMoreBtn) {
+                const remaining = tbody.querySelectorAll('.cgr-hidden-row').length;
+                if (remaining > 0) {
+                    loadMoreBtn.textContent = `Load More Leaders (${remaining} remaining)`;
+                } else {
+                    loadMoreBtn.style.display = 'none';
+                }
+            }
+            
+            // Re-apply filters to new rows
+            applyFilters();
         }
 
         /**
@@ -125,17 +156,20 @@
 
             // Use setTimeout to prevent blocking UI
             setTimeout(() => {
+                // Get only visible (non-hidden) rows for filtering
+                const visibleRows = allRows.filter(row => !row.classList.contains('cgr-hidden-row'));
+                
                 // Filter rows
-                const filteredRows = allRows.filter(rowMatchesFilters);
+                const filteredRows = visibleRows.filter(rowMatchesFilters);
                 
                 // Sort filtered rows
                 const sortedRows = sortRows(filteredRows);
 
-                // Clear tbody
-                tbody.innerHTML = '';
+                // Hide all visible rows first
+                visibleRows.forEach(row => row.style.display = 'none');
 
-                // Append sorted rows
-                sortedRows.forEach(row => tbody.appendChild(row));
+                // Show sorted filtered rows
+                sortedRows.forEach(row => row.style.display = '');
 
                 // Update visible count
                 if (visibleCount) {
@@ -227,6 +261,10 @@
             resetBtn.addEventListener('click', resetFilters);
         }
 
+        if (loadMoreBtn) {
+            loadMoreBtn.addEventListener('click', loadMoreRows);
+        }
+
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
             // Ctrl/Cmd + K to focus search
@@ -251,6 +289,6 @@
         updateClearButton();
         
         // Log initialization
-        console.log(`CGR Directory initialized with ${totalRows} leaders`);
+        console.log(`CGR Directory initialized with ${totalRows} leaders (${currentlyLoaded} initially loaded)`);
     }
 })();

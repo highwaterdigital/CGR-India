@@ -119,6 +119,8 @@
     padding: 1.75rem;
     margin-bottom: 2rem;
     box-shadow: var(--cgr-shadow-md);
+    position: relative;
+    z-index: 5;
 }
 
 .cgr-controls-row {
@@ -131,6 +133,7 @@
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    position: relative;
 }
 
 .cgr-search-group {
@@ -144,18 +147,21 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    margin-bottom: 0.25rem;
 }
 
 .cgr-control-label svg {
     width: 16px;
     height: 16px;
     color: var(--cgr-accent);
+    flex-shrink: 0;
 }
 
 .cgr-search-wrapper {
     position: relative;
     display: flex;
     align-items: center;
+    width: 100%;
 }
 
 .cgr-control-input,
@@ -169,6 +175,10 @@
     background: var(--cgr-white);
     transition: var(--cgr-transition);
     outline: none;
+    box-sizing: border-box;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
 }
 
 .cgr-control-input {
@@ -183,12 +193,18 @@
 
 .cgr-control-select {
     cursor: pointer;
-    appearance: none;
+    background-color: var(--cgr-white);
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 0.75rem center;
     background-size: 20px;
     padding-right: 2.5rem;
+}
+
+.cgr-control-select option {
+    background: var(--cgr-white);
+    color: var(--cgr-text);
+    padding: 0.5rem;
 }
 
 .cgr-clear-btn {
@@ -349,6 +365,41 @@
     background: var(--cgr-dark);
     transform: translateY(-2px);
     box-shadow: var(--cgr-shadow-md);
+}
+
+/* Load More Button */
+.cgr-load-more-container {
+    display: flex;
+    justify-content: center;
+    padding: 2rem 0;
+}
+
+.cgr-btn-load-more {
+    padding: 1rem 2rem;
+    background: var(--cgr-primary);
+    color: var(--cgr-white);
+    border: none;
+    border-radius: var(--cgr-radius-sm);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--cgr-transition);
+    box-shadow: var(--cgr-shadow-md);
+}
+
+.cgr-btn-load-more:hover {
+    background: var(--cgr-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--cgr-shadow-lg);
+}
+
+.cgr-btn-load-more:active {
+    transform: translateY(0);
+}
+
+/* Hidden rows */
+.cgr-hidden-row {
+    display: none !important;
 }
 
 /* Responsive Design */

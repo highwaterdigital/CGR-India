@@ -14,7 +14,7 @@ $args = array(
     'post_type' => 'earth_leader',
     'posts_per_page' => -1,
     'orderby' => 'title',
-    'order' => 'ASC',
+    'order' => 'DESC', // Newest first
 );
 
 $leaders_query = new WP_Query($args);
@@ -26,10 +26,10 @@ if ($leaders_query->have_posts()) {
         $leaders_query->the_post();
         
         $name = get_the_title();
-        $district = get_post_meta(get_the_ID(), 'district', true) ?: '—';
-        $year = get_post_meta(get_the_ID(), 'training_year', true) ?: '';
-        $org = get_post_meta(get_the_ID(), 'organization', true) ?: 'CGR';
-        $email = get_post_meta(get_the_ID(), 'email', true) ?: '';
+        $district = get_post_meta(get_the_ID(), '_cgr_district', true) ?: '—';
+        $year = get_post_meta(get_the_ID(), '_cgr_training_year', true) ?: '';
+        $org = get_post_meta(get_the_ID(), '_cgr_organization', true) ?: 'CGR';
+        $email = get_post_meta(get_the_ID(), '_cgr_email', true) ?: '';
         
         $leaders_data[] = array(
             'name' => $name,
@@ -46,6 +46,9 @@ if ($leaders_query->have_posts()) {
     }
     wp_reset_postdata();
 }
+
+// Reverse to show latest at bottom (so load more adds newer ones)
+$leaders_data = array_reverse($leaders_data);
 
 $total_count = count($leaders_data);
 $districts_count = count($districts);
@@ -206,8 +209,48 @@ $latest_year = !empty($leaders_data) ? max(array_column($leaders_data, 'year')) 
                     </tr>
                 </thead>
                 <tbody id="cgr-leaders-tbody">
-                    <?php foreach ($leaders_data as $leader): ?>
+                    <?php 
+                    // Initially show only first 100 (reversed, so these are the oldest)
+                    $initial_display = array_slice($leaders_data, 0, 100);
+                    foreach ($initial_display as $leader): 
+                    ?>
                     <tr 
+                        class="cgr-leader-row"
+                        data-name="<?php echo esc_attr(strtolower($leader['name'])); ?>"
+                        data-district="<?php echo esc_attr(strtolower($leader['district'])); ?>"
+                        data-year="<?php echo esc_attr($leader['year']); ?>"
+                        data-org="<?php echo esc_attr(strtolower($leader['org'])); ?>"
+                        data-email="<?php echo esc_attr(strtolower($leader['email'])); ?>"
+                        data-search="<?php echo esc_attr(strtolower($leader['name'] . ' ' . $leader['district'] . ' ' . $leader['org'])); ?>"
+                    >
+                        <td class="cgr-td-name">
+                            <a href="<?php echo esc_url($leader['url']); ?>" class="cgr-leader-link">
+                                <?php echo esc_html($leader['name']); ?>
+                            </a>
+                        </td>
+                        <td class="cgr-td-district"><?php echo esc_html($leader['district']); ?></td>
+                        <td class="cgr-td-year"><?php echo $leader['year'] ? esc_html($leader['year']) : '—'; ?></td>
+                        <td class="cgr-td-org"><?php echo esc_html($leader['org']); ?></td>
+                        <td class="cgr-td-email">
+                            <?php if ($leader['email']): ?>
+                                <a href="mailto:<?php echo esc_attr($leader['email']); ?>" class="cgr-email-link">
+                                    <?php echo esc_html($leader['email']); ?>
+                                </a>
+                            <?php else: ?>
+                                —
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                    
+                    <?php 
+                    // Hidden rows for load more
+                    $hidden_leaders = array_slice($leaders_data, 100);
+                    foreach ($hidden_leaders as $leader): 
+                    ?>
+                    <tr 
+                        class="cgr-leader-row cgr-hidden-row"
+                        style="display: none;"
                         data-name="<?php echo esc_attr(strtolower($leader['name'])); ?>"
                         data-district="<?php echo esc_attr(strtolower($leader['district'])); ?>"
                         data-year="<?php echo esc_attr($leader['year']); ?>"
@@ -246,5 +289,13 @@ $latest_year = !empty($leaders_data) ? max(array_column($leaders_data, 'year')) 
                 <button type="button" id="cgr-reset-filters" class="cgr-btn-reset">Reset Filters</button>
             </div>
         </div>
+        
+        <?php if (count($leaders_data) > 100): ?>
+        <div class="cgr-load-more-container">
+            <button type="button" id="cgr-load-more" class="cgr-btn-load-more">
+                Load More Leaders (<?php echo count($leaders_data) - 100; ?> remaining)
+            </button>
+        </div>
+        <?php endif; ?>
     </div>
 </div>
