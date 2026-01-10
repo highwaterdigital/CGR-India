@@ -1,0 +1,494 @@
+/**
+ * Earth Leaders Directory Styles
+ * Modern, responsive design for the CGR Earth Leaders directory
+ */
+
+:root {
+    --cgr-primary: #2c5f2d;
+    --cgr-accent: #97bc62;
+    --cgr-dark: #1a3a1b;
+    --cgr-light: #f8faf8;
+    --cgr-white: #ffffff;
+    --cgr-text: #333333;
+    --cgr-text-muted: #666666;
+    --cgr-border: #e0e0e0;
+    --cgr-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+    --cgr-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --cgr-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+    --cgr-radius: 12px;
+    --cgr-radius-sm: 8px;
+    --cgr-transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Container */
+.cgr-directory-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+/* Statistics Grid */
+.cgr-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+}
+
+.cgr-stat-card {
+    background: var(--cgr-white);
+    border-radius: var(--cgr-radius);
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    box-shadow: var(--cgr-shadow-md);
+    transition: var(--cgr-transition);
+    border: 2px solid transparent;
+}
+
+.cgr-stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--cgr-shadow-lg);
+}
+
+.cgr-stat-card-highlight {
+    background: linear-gradient(135deg, var(--cgr-primary), var(--cgr-dark));
+    color: var(--cgr-white);
+    border-color: var(--cgr-accent);
+}
+
+.cgr-stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--cgr-radius-sm);
+    background: var(--cgr-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.cgr-stat-card-highlight .cgr-stat-icon {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.cgr-stat-icon svg {
+    width: 24px;
+    height: 24px;
+    color: var(--cgr-primary);
+}
+
+.cgr-stat-card-highlight .cgr-stat-icon svg {
+    color: var(--cgr-white);
+}
+
+.cgr-stat-content {
+    flex: 1;
+}
+
+.cgr-stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--cgr-dark);
+    margin-bottom: 0.25rem;
+}
+
+.cgr-stat-card-highlight .cgr-stat-value {
+    color: var(--cgr-white);
+}
+
+.cgr-stat-label {
+    font-size: 0.875rem;
+    color: var(--cgr-text-muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.cgr-stat-card-highlight .cgr-stat-label {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Controls Panel */
+.cgr-controls-panel {
+    background: var(--cgr-white);
+    border-radius: var(--cgr-radius);
+    padding: 1.75rem;
+    margin-bottom: 2rem;
+    box-shadow: var(--cgr-shadow-md);
+}
+
+.cgr-controls-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.cgr-control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.cgr-search-group {
+    grid-column: span 1;
+}
+
+.cgr-control-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--cgr-dark);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.cgr-control-label svg {
+    width: 16px;
+    height: 16px;
+    color: var(--cgr-accent);
+}
+
+.cgr-search-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.cgr-control-input,
+.cgr-control-select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid var(--cgr-border);
+    border-radius: var(--cgr-radius-sm);
+    font-size: 1rem;
+    color: var(--cgr-text);
+    background: var(--cgr-white);
+    transition: var(--cgr-transition);
+    outline: none;
+}
+
+.cgr-control-input {
+    padding-right: 3rem;
+}
+
+.cgr-control-input:focus,
+.cgr-control-select:focus {
+    border-color: var(--cgr-primary);
+    box-shadow: 0 0 0 3px rgba(44, 95, 45, 0.1);
+}
+
+.cgr-control-select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 20px;
+    padding-right: 2.5rem;
+}
+
+.cgr-clear-btn {
+    position: absolute;
+    right: 0.75rem;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    color: var(--cgr-text-muted);
+    cursor: pointer;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: var(--cgr-transition);
+}
+
+.cgr-clear-btn.visible {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.cgr-clear-btn:hover {
+    background: var(--cgr-light);
+    color: var(--cgr-dark);
+}
+
+.cgr-clear-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* Table Container */
+.cgr-table-container {
+    background: var(--cgr-white);
+    border-radius: var(--cgr-radius);
+    box-shadow: var(--cgr-shadow-md);
+    overflow: hidden;
+}
+
+.cgr-table-wrapper {
+    overflow-x: auto;
+    position: relative;
+    min-height: 400px;
+}
+
+.cgr-leaders-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9375rem;
+}
+
+.cgr-leaders-table thead {
+    background: linear-gradient(135deg, var(--cgr-primary), var(--cgr-dark));
+    color: var(--cgr-white);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.cgr-leaders-table th {
+    padding: 1.25rem 1rem;
+    text-align: left;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.8125rem;
+    white-space: nowrap;
+}
+
+.cgr-leaders-table tbody tr {
+    border-bottom: 1px solid var(--cgr-border);
+    transition: var(--cgr-transition);
+}
+
+.cgr-leaders-table tbody tr:hover {
+    background: var(--cgr-light);
+}
+
+.cgr-leaders-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.cgr-leaders-table td {
+    padding: 1rem;
+}
+
+.cgr-td-name {
+    font-weight: 600;
+}
+
+.cgr-leader-link {
+    color: var(--cgr-primary);
+    text-decoration: none;
+    transition: var(--cgr-transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.cgr-leader-link:hover {
+    color: var(--cgr-accent);
+    text-decoration: underline;
+}
+
+.cgr-email-link {
+    color: var(--cgr-text-muted);
+    text-decoration: none;
+    font-size: 0.875rem;
+    transition: var(--cgr-transition);
+}
+
+.cgr-email-link:hover {
+    color: var(--cgr-primary);
+    text-decoration: underline;
+}
+
+/* No Results */
+.cgr-no-results {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    text-align: center;
+}
+
+.cgr-no-results svg {
+    width: 64px;
+    height: 64px;
+    color: var(--cgr-text-muted);
+    margin-bottom: 1.5rem;
+    opacity: 0.5;
+}
+
+.cgr-no-results p {
+    font-size: 1.125rem;
+    color: var(--cgr-text-muted);
+    margin-bottom: 1.5rem;
+}
+
+.cgr-btn-reset {
+    padding: 0.75rem 1.5rem;
+    background: var(--cgr-primary);
+    color: var(--cgr-white);
+    border: none;
+    border-radius: var(--cgr-radius-sm);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--cgr-transition);
+}
+
+.cgr-btn-reset:hover {
+    background: var(--cgr-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--cgr-shadow-md);
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+    .cgr-controls-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .cgr-search-group {
+        grid-column: span 1;
+    }
+    
+    .cgr-leaders-table {
+        font-size: 0.875rem;
+    }
+    
+    .cgr-leaders-table th,
+    .cgr-leaders-table td {
+        padding: 0.875rem 0.75rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .cgr-directory-container {
+        padding: 1rem 0.75rem;
+    }
+    
+    .cgr-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    .cgr-stat-card {
+        padding: 1.25rem;
+    }
+    
+    .cgr-stat-value {
+        font-size: 1.75rem;
+    }
+    
+    .cgr-controls-panel {
+        padding: 1.25rem;
+    }
+    
+    /* Mobile Table - Card View */
+    .cgr-table-wrapper {
+        overflow-x: visible;
+    }
+    
+    .cgr-leaders-table thead {
+        display: none;
+    }
+    
+    .cgr-leaders-table tbody tr {
+        display: block;
+        margin-bottom: 1rem;
+        border: 1px solid var(--cgr-border);
+        border-radius: var(--cgr-radius-sm);
+        overflow: hidden;
+    }
+    
+    .cgr-leaders-table tbody tr:hover {
+        box-shadow: var(--cgr-shadow-md);
+    }
+    
+    .cgr-leaders-table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid var(--cgr-border);
+    }
+    
+    .cgr-leaders-table td:last-child {
+        border-bottom: none;
+    }
+    
+    .cgr-leaders-table td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: var(--cgr-dark);
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+    }
+    
+    .cgr-td-name::before {
+        content: 'Name';
+    }
+    
+    .cgr-td-district::before {
+        content: 'District';
+    }
+    
+    .cgr-td-year::before {
+        content: 'Year';
+    }
+    
+    .cgr-td-org::before {
+        content: 'Organization';
+    }
+    
+    .cgr-td-email::before {
+        content: 'Email';
+    }
+    
+    .cgr-td-name {
+        background: var(--cgr-light);
+        font-weight: 700;
+    }
+}
+
+@media (max-width: 480px) {
+    .cgr-stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .cgr-stat-value {
+        font-size: 1.5rem;
+    }
+}
+
+/* Loading State */
+.cgr-table-loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.cgr-leaders-table tbody tr {
+    animation: fadeIn 0.3s ease-out;
+}

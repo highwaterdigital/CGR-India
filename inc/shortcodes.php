@@ -383,233 +383,25 @@ add_shortcode( 'cgr_gallery', 'cgr_gallery_shortcode' );
  * Usage: [cgr_earth_leaders_directory]
  */
 function cgr_earth_leaders_directory_shortcode() {
-    ob_start();
+    // Enqueue CSS and JS
+    wp_enqueue_style(
+        'cgr-earth-leaders-directory',
+        get_stylesheet_directory_uri() . '/assets/css/earth-leaders-directory.css',
+        array(),
+        filemtime( get_stylesheet_directory() . '/assets/css/earth-leaders-directory.css' )
+    );
     
-    $leaders_query = new WP_Query([
-        'post_type'      => 'earth_leader',
-        'post_status'    => 'publish',
-        'posts_per_page' => -1,
-        'orderby'        => 'title',
-        'order'          => 'ASC',
-    ]);
-
-    $leaders      = [];
-    $districts    = [];
-    $years        = [];
-
-    if ( $leaders_query->have_posts() ) {
-        while ( $leaders_query->have_posts() ) {
-            $leaders_query->the_post();
-
-            $district  = trim( (string) get_post_meta( get_the_ID(), '_cgr_district', true ) );
-            $org       = trim( (string) get_post_meta( get_the_ID(), '_cgr_organization', true ) );
-            $year      = trim( (string) get_post_meta( get_the_ID(), '_cgr_training_year', true ) );
-            $email     = trim( (string) get_post_meta( get_the_ID(), '_cgr_email', true ) );
-
-            $leaders[] = [
-                'id'       => get_the_ID(),
-                'name'     => get_the_title(),
-                'district' => $district,
-                'org'      => $org,
-                'year'     => $year,
-                'email'    => $email,
-                'link'     => get_permalink(),
-            ];
-
-            if ( $district ) {
-                $districts[ $district ] = true;
-            }
-            if ( $year && is_numeric( $year ) ) {
-                $years[] = (int) $year;
-            }
-        }
-        wp_reset_postdata();
-    }
-
-    $total_count      = count( $leaders );
-    $unique_districts = count( $districts );
-    $latest_year      = ! empty( $years ) ? max( $years ) : null;
-    ?>
-    <div class="cgr-directory-wrapper">
-        <div class="cgr-table-stats">
-            <div class="stat">
-                <span class="label">Total Registered</span>
-                <span class="value" id="cgr-total-count"><?php echo esc_html( $total_count ); ?></span>
-            </div>
-            <div class="stat">
-                <span class="label">Districts</span>
-                <span class="value"><?php echo esc_html( $unique_districts ); ?></span>
-            </div>
-            <div class="stat">
-                <span class="label">Latest Year</span>
-                <span class="value"><?php echo $latest_year ? esc_html( $latest_year ) : '—'; ?></span>
-            </div>
-            <div class="stat">
-                <span class="label">Visible Now</span>
-                <span class="value" id="cgr-visible-count"><?php echo esc_html( $total_count ); ?></span>
-            </div>
-        </div>
-
-        <div class="cgr-table-shell">
-            <div class="cgr-table-controls">
-                <label class="cgr-search-field" aria-label="Search Earth Leaders">
-                    <span class="dashicons dashicons-search"></span>
-                    <input type="text" id="cgr-table-search" placeholder="Search by name, district, organization, or email..." />
-                    <button type="button" id="cgr-clear-search" aria-label="Clear search">&times;</button>
-                </label>
-
-                <div class="cgr-sort-field">
-                    <label for="cgr-table-sort">Sort</label>
-                    <select id="cgr-table-sort">
-                        <option value="name_asc">Name (A-Z)</option>
-                        <option value="name_desc">Name (Z-A)</option>
-                        <option value="district_asc">District (A-Z)</option>
-                        <option value="year_desc">Training Year (Newest)</option>
-                        <option value="year_asc">Training Year (Oldest)</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="cgr-table-wrapper">
-                <table id="cgr-leaders-table" class="cgr-data-table">
-                    <thead>
-                        <tr>
-                            <th data-key="name" data-type="string">Name</th>
-                            <th data-key="district" data-type="string">District</th>
-                            <th data-key="year" data-type="number">Training Year</th>
-                            <th data-key="org" data-type="string">Organization</th>
-                            <th data-key="email" data-type="string">E-Mail</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ( $leaders as $leader ) :
-                            $search_blob = strtolower( implode( ' ', array_filter( [
-                                $leader['name'],
-                                $leader['district'],
-                                $leader['org'],
-                                $leader['year'],
-                                $leader['email'],
-                            ] ) ) );
-                            $year_attr = is_numeric( $leader['year'] ) ? (int) $leader['year'] : '';
-                        ?>
-                        <tr
-                            data-name="<?php echo esc_attr( strtolower( $leader['name'] ) ); ?>"
-                            data-district="<?php echo esc_attr( strtolower( $leader['district'] ) ); ?>"
-                            data-year="<?php echo esc_attr( $year_attr ); ?>"
-                            data-org="<?php echo esc_attr( strtolower( $leader['org'] ) ); ?>"
-                            data-email="<?php echo esc_attr( strtolower( $leader['email'] ) ); ?>"
-                            data-search="<?php echo esc_attr( $search_blob ); ?>"
-                        >
-                            <td>
-                                <a href="<?php echo esc_url( $leader['link'] ); ?>" class="cgr-table-link">
-                                    <?php echo esc_html( $leader['name'] ); ?>
-                                </a>
-                            </td>
-                            <td><?php echo esc_html( $leader['district'] ?: '—' ); ?></td>
-                            <td><?php echo esc_html( $leader['year'] ?: '—' ); ?></td>
-                            <td><?php echo esc_html( $leader['org'] ?: '—' ); ?></td>
-                            <td><?php echo esc_html( $leader['email'] ?: '—' ); ?></td>
-                        </tr>
-                        <?php endforeach; ?>
-                        <?php if ( empty( $leaders ) ) : ?>
-                            <tr><td colspan="5" class="no-results">No Earth Leaders found.</td></tr>
-                        <?php endif; ?>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const searchInput = document.getElementById('cgr-table-search');
-        if(!searchInput) return;
-        const clearBtn = document.getElementById('cgr-clear-search');
-        const sortSelect = document.getElementById('cgr-table-sort');
-        const table = document.getElementById('cgr-leaders-table');
-        const tbody = table.querySelector('tbody');
-        const rows = Array.from(tbody.querySelectorAll('tr')).filter(r => !r.classList.contains('no-results'));
-        const visibleCount = document.getElementById('cgr-visible-count');
-        const totalCount = document.getElementById('cgr-total-count');
-
-        // Toggle clear button visibility
-        function toggleClearButton() {
-            if (searchInput.value.trim()) {
-                clearBtn.classList.add('visible');
-            } else {
-                clearBtn.classList.remove('visible');
-            }
-        }
-
-        function getValue(row, key) {
-            const raw = row.dataset[key] || '';
-            if (key === 'year') {
-                return raw === '' ? -Infinity : parseInt(raw, 10);
-            }
-            return raw;
-        }
-
-        function applyFilters() {
-            const term = (searchInput.value || '').toLowerCase().trim();
-            const [sortKey, sortDir] = (sortSelect.value || 'name_asc').split('_');
-
-            let filtered = rows;
-            if (term) {
-                filtered = rows.filter(row => row.dataset.search.includes(term));
-            }
-
-            filtered.sort((a, b) => {
-                const type = sortKey === 'year' ? 'number' : 'string';
-                let va = getValue(a, sortKey);
-                let vb = getValue(b, sortKey);
-
-                if (type === 'string') {
-                    va = va.toString();
-                    vb = vb.toString();
-                }
-
-                if (va < vb) return sortDir === 'asc' ? -1 : 1;
-                if (va > vb) return sortDir === 'asc' ? 1 : -1;
-                const na = getValue(a, 'name');
-                const nb = getValue(b, 'name');
-                if (na < nb) return -1;
-                if (na > nb) return 1;
-                return 0;
-            });
-
-            tbody.innerHTML = '';
-            filtered.forEach(row => tbody.appendChild(row));
-
-            if (visibleCount) visibleCount.textContent = filtered.length;
-            if (totalCount) totalCount.textContent = rows.length;
-
-            if (filtered.length === 0) {
-                const tr = document.createElement('tr');
-                const td = document.createElement('td');
-                td.colSpan = 5;
-                td.className = 'no-results';
-                td.textContent = 'No matches for your search.';
-                tr.appendChild(td);
-                tbody.appendChild(tr);
-            }
-            
-            toggleClearButton();
-        }
-
-        searchInput.addEventListener('input', applyFilters);
-
-        clearBtn.addEventListener('click', () => {
-            searchInput.value = '';
-            applyFilters();
-            searchInput.focus();
-        });
-
-        sortSelect.addEventListener('change', applyFilters);
-        
-        // Initial toggle
-        toggleClearButton();
-    });
-    </script>
-    <?php
+    wp_enqueue_script(
+        'cgr-earth-leaders-directory',
+        get_stylesheet_directory_uri() . '/assets/js/earth-leaders-directory.js',
+        array(),
+        filemtime( get_stylesheet_directory() . '/assets/js/earth-leaders-directory.js' ),
+        true
+    );
+    
+    // Load template
+    ob_start();
+    include get_stylesheet_directory() . '/templates/earth-leaders-directory.php';
     return ob_get_clean();
 }
 add_shortcode('cgr_earth_leaders_directory', 'cgr_earth_leaders_directory_shortcode');
