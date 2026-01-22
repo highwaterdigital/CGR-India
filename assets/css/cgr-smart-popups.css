@@ -1,0 +1,76 @@
+.cgr-smart-popup {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 16px;
+    background: rgba(6, 12, 18, 0.7);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 220ms ease, visibility 220ms ease;
+    z-index: 9999;
+}
+
+.cgr-smart-popup.is-open {
+    opacity: 1;
+    visibility: visible;
+}
+
+.cgr-smart-popup__content {
+    position: relative;
+    width: min(960px, 100%);
+    max-height: 90vh;
+    background: #fff;
+    border-radius: 22px;
+    box-shadow: 0 35px 70px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    z-index: 1;
+}
+
+.cgr-smart-popup__body {
+    padding: 32px;
+    overflow-y: auto;
+    color: var(--text-primary);
+}
+
+.cgr-smart-popup__close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    border: none;
+    background: rgba(47, 143, 219, 0.15);
+    color: var(--sky-dark);
+    font-size: 1.4rem;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 200ms ease, background 200ms ease;
+}
+
+.cgr-smart-popup__close:hover {
+    background: rgba(47, 143, 219, 0.25);
+    transform: scale(1.05);
+}
+
+.cgr-smart-popup__backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+}
+
+body.cgr-smart-popup-open {
+    overflow: hidden;
+}
+
+@media (max-width: 768px) {
+    .cgr-smart-popup__body {
+        padding: 24px;
+    }
+}

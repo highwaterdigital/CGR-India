@@ -63,6 +63,11 @@ require_once CGR_CHILD_DIR . '/includes/people-manager.php';
 require_once CGR_CHILD_DIR . '/includes/awards-manager.php';
 
 /**
+ * Load Smart Popups.
+ */
+require_once CGR_CHILD_DIR . '/includes/cgr-smart-popups.php';
+
+/**
  * Load Guest Counter.
  */
 require_once CGR_CHILD_DIR . '/includes/guest-counter.php';
