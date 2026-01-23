@@ -106,6 +106,10 @@
             return false;
         }
 
+        if ((popup.frequency || 'always') === 'always') {
+            return true;
+        }
+
         var lastDismissed = getLastDismissed(popup.id);
         if (isFrequencyBlocked(popup, lastDismissed, now)) {
             return false;

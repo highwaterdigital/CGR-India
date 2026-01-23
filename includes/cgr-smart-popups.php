@@ -130,6 +130,37 @@ function cgr_popup_format_datetime( $value ) {
 }
 
 /**
+ * Convert a popup datetime string (site timezone) into a timestamp.
+ */
+function cgr_popup_datetime_to_timestamp( $value ) {
+    $value = trim( (string) $value );
+    if ( '' === $value ) {
+        return 0;
+    }
+
+    $timezone = wp_timezone();
+    $formats  = array(
+        'Y-m-d H:i:s',
+        'Y-m-d H:i',
+        'd-m-Y H:i',
+        'd/m/Y H:i',
+        'Y-m-d',
+        'd-m-Y',
+        'd/m/Y',
+    );
+
+    foreach ( $formats as $format ) {
+        $date = date_create_from_format( $format, $value, $timezone );
+        if ( $date ) {
+            return $date->getTimestamp();
+        }
+    }
+
+    $timestamp = strtotime( $value );
+    return $timestamp ? (int) $timestamp : 0;
+}
+
+/**
  * Sanitize popup position value.
  */
 function cgr_popup_sanitize_position( $value ) {
@@ -208,8 +239,8 @@ function cgr_popup_get_effective_status( $post_id, $meta = array(), $now = null 
         return 'draft';
     }
 
-    $start = $meta['start'] ? strtotime( $meta['start'] ) : null;
-    $end   = $meta['end'] ? strtotime( $meta['end'] ) : null;
+    $start = cgr_popup_datetime_to_timestamp( $meta['start'] );
+    $end   = cgr_popup_datetime_to_timestamp( $meta['end'] );
 
     if ( $end && $now > $end ) {
         return 'expired';
@@ -685,7 +716,8 @@ function cgr_render_smart_popups_dashboard() {
                             if ( 'interval' === $meta['next_mode'] && $meta['next_value'] ) {
                                 $next_display = sprintf( __( 'Every %d days after dismissal', 'cgr-child' ), absint( $meta['next_value'] ) );
                             } elseif ( 'fixed' === $meta['next_mode'] && $meta['next_value'] ) {
-                                $next_display = wp_date( 'M j, Y g:ia', strtotime( $meta['next_value'] ) );
+                                $next_ts = cgr_popup_datetime_to_timestamp( $meta['next_value'] );
+                                $next_display = $next_ts ? wp_date( 'M j, Y g:ia', $next_ts ) : __( 'None', 'cgr-child' );
                             } else {
                                 $next_display = __( 'None', 'cgr-child' );
                             }
@@ -702,8 +734,18 @@ function cgr_render_smart_popups_dashboard() {
                                         <?php echo esc_html( ucfirst( $effective_status ) ); ?>
                                     </span>
                                 </td>
-                                <td><?php echo $meta['start'] ? esc_html( wp_date( 'M j, Y g:ia', strtotime( $meta['start'] ) ) ) : esc_html__( '—', 'cgr-child' ); ?></td>
-                                <td><?php echo $meta['end'] ? esc_html( wp_date( 'M j, Y g:ia', strtotime( $meta['end'] ) ) ) : esc_html__( '—', 'cgr-child' ); ?></td>
+                                <td>
+                                    <?php
+                                    $start_ts = cgr_popup_datetime_to_timestamp( $meta['start'] );
+                                    echo $start_ts ? esc_html( wp_date( 'M j, Y g:ia', $start_ts ) ) : esc_html__( '—', 'cgr-child' );
+                                    ?>
+                                </td>
+                                <td>
+                                    <?php
+                                    $end_ts = cgr_popup_datetime_to_timestamp( $meta['end'] );
+                                    echo $end_ts ? esc_html( wp_date( 'M j, Y g:ia', $end_ts ) ) : esc_html__( '—', 'cgr-child' );
+                                    ?>
+                                </td>
                                 <td>
                                     <?php if ( 'all' === $meta['target_mode'] ) : ?>
                                         <?php esc_html_e( 'All pages', 'cgr-child' ); ?>
@@ -823,14 +865,14 @@ function cgr_build_smart_popup_payloads() {
             continue;
         }
 
-        $start_timestamp = $meta['start'] ? strtotime( $meta['start'] ) : 0;
-        $end_timestamp   = $meta['end'] ? strtotime( $meta['end'] ) : 0;
+        $start_timestamp = cgr_popup_datetime_to_timestamp( $meta['start'] );
+        $end_timestamp   = cgr_popup_datetime_to_timestamp( $meta['end'] );
 
         $next_value = null;
         if ( 'interval' === $meta['next_mode'] ) {
             $next_value = absint( $meta['next_value'] );
         } elseif ( 'fixed' === $meta['next_mode'] && $meta['next_value'] ) {
-            $next_value = strtotime( $meta['next_value'] );
+            $next_value = cgr_popup_datetime_to_timestamp( $meta['next_value'] );
         }
         $next_value = apply_filters( 'cgr_popup_next_scheduled_value', $next_value, $popup->ID, $meta );
 
