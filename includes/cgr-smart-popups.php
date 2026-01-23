@@ -72,6 +72,9 @@ function cgr_popup_default_meta() {
         'next_mode'   => 'none',
         'next_value'  => '',
         'frequency'   => 'always',
+        'position'    => 'center',
+        'width'       => '',
+        'height'      => '',
     );
 }
 
@@ -84,15 +87,29 @@ function cgr_popup_normalize_datetime( $value ) {
         return '';
     }
 
-    $value  = str_replace( 'T', ' ', $value );
-    $format = ( 16 === strlen( $value ) ) ? 'Y-m-d H:i' : 'Y-m-d H:i:s';
-    $date   = date_create_from_format( $format, $value, wp_timezone() );
+    $value   = str_replace( 'T', ' ', $value );
+    $formats = array(
+        'Y-m-d H:i',
+        'Y-m-d H:i:s',
+        'd-m-Y H:i',
+        'd/m/Y H:i',
+        'd-m-Y',
+        'd/m/Y',
+    );
 
-    if ( ! $date ) {
+    foreach ( $formats as $format ) {
+        $date = date_create_from_format( $format, $value, wp_timezone() );
+        if ( $date ) {
+            return $date->format( 'Y-m-d H:i:s' );
+        }
+    }
+
+    $timestamp = strtotime( $value );
+    if ( ! $timestamp ) {
         return '';
     }
 
-    return $date->format( 'Y-m-d H:i:s' );
+    return wp_date( 'Y-m-d H:i:s', $timestamp );
 }
 
 /**
@@ -113,6 +130,39 @@ function cgr_popup_format_datetime( $value ) {
 }
 
 /**
+ * Sanitize popup position value.
+ */
+function cgr_popup_sanitize_position( $value ) {
+    $value    = sanitize_text_field( (string) $value );
+    $allowed  = array( 'center', 'bottom-right', 'bottom-left' );
+    return in_array( $value, $allowed, true ) ? $value : 'center';
+}
+
+/**
+ * Sanitize CSS size values (px, %, vw, vh, rem, em).
+ */
+function cgr_popup_sanitize_css_size( $value ) {
+    $value = trim( (string) $value );
+    if ( '' === $value ) {
+        return '';
+    }
+
+    if ( 'auto' === strtolower( $value ) ) {
+        return 'auto';
+    }
+
+    if ( preg_match( '/^\d+(\.\d+)?$/', $value ) ) {
+        return $value . 'px';
+    }
+
+    if ( preg_match( '/^\d+(\.\d+)?(px|%|vw|vh|rem|em)$/', $value ) ) {
+        return $value;
+    }
+
+    return '';
+}
+
+/**
  * Fetch popup meta with defaults applied.
  */
 function cgr_popup_get_meta( $post_id ) {
@@ -127,6 +177,9 @@ function cgr_popup_get_meta( $post_id ) {
         'next_mode'   => get_post_meta( $post_id, '_cgr_popup_next_mode', true ),
         'next_value'  => get_post_meta( $post_id, '_cgr_popup_next_value', true ),
         'frequency'   => get_post_meta( $post_id, '_cgr_popup_frequency', true ),
+        'position'    => get_post_meta( $post_id, '_cgr_popup_position', true ),
+        'width'       => get_post_meta( $post_id, '_cgr_popup_width', true ),
+        'height'      => get_post_meta( $post_id, '_cgr_popup_height', true ),
     );
 
     foreach ( $defaults as $key => $default ) {
@@ -136,6 +189,9 @@ function cgr_popup_get_meta( $post_id ) {
     }
 
     $meta['target_ids'] = array_filter( array_map( 'absint', (array) $meta['target_ids'] ) );
+    $meta['position']   = cgr_popup_sanitize_position( $meta['position'] );
+    $meta['width']      = cgr_popup_sanitize_css_size( $meta['width'] );
+    $meta['height']     = cgr_popup_sanitize_css_size( $meta['height'] );
 
     return $meta;
 }
@@ -197,6 +253,11 @@ function cgr_render_popup_fields( $meta, $id_prefix ) {
         'week'    => __( 'Once per week', 'cgr-child' ),
         'month'   => __( 'Once per month', 'cgr-child' ),
         'once'    => __( 'Once ever', 'cgr-child' ),
+    );
+    $positions = array(
+        'center'       => __( 'Center', 'cgr-child' ),
+        'bottom-right' => __( 'Bottom right', 'cgr-child' ),
+        'bottom-left'  => __( 'Bottom left', 'cgr-child' ),
     );
 
     $pages = get_posts( array(
@@ -313,6 +374,28 @@ function cgr_render_popup_fields( $meta, $id_prefix ) {
                 </select>
             </label>
         </div>
+
+        <div class="cgr-card cgr-card--tight">
+            <h3><?php esc_html_e( 'Layout', 'cgr-child' ); ?></h3>
+            <label class="cgr-field">
+                <span><?php esc_html_e( 'Popup position', 'cgr-child' ); ?></span>
+                <select name="cgr_popup_position" class="widefat">
+                    <?php foreach ( $positions as $value => $label ) : ?>
+                        <option value="<?php echo esc_attr( $value ); ?>" <?php selected( $meta['position'], $value ); ?>>
+                            <?php echo esc_html( $label ); ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </label>
+            <label class="cgr-field">
+                <span><?php esc_html_e( 'Popup width (e.g., 640px or 70vw)', 'cgr-child' ); ?></span>
+                <input type="text" name="cgr_popup_width" value="<?php echo esc_attr( $meta['width'] ); ?>" class="regular-text" placeholder="960px">
+            </label>
+            <label class="cgr-field">
+                <span><?php esc_html_e( 'Popup height (e.g., 420px or 70vh)', 'cgr-child' ); ?></span>
+                <input type="text" name="cgr_popup_height" value="<?php echo esc_attr( $meta['height'] ); ?>" class="regular-text" placeholder="auto">
+            </label>
+        </div>
     </div>
     <?php
 }
@@ -346,7 +429,11 @@ function cgr_save_popup_meta( $post_id ) {
         return;
     }
 
-    if ( isset( $_POST['cgr_popup_meta_nonce'] ) && ! wp_verify_nonce( $_POST['cgr_popup_meta_nonce'], 'cgr_popup_meta_nonce' ) ) {
+    if ( ! isset( $_POST['cgr_popup_meta_nonce'] ) ) {
+        return;
+    }
+
+    if ( ! wp_verify_nonce( $_POST['cgr_popup_meta_nonce'], 'cgr_popup_meta_nonce' ) ) {
         return;
     }
 
@@ -387,6 +474,10 @@ function cgr_save_popup_meta( $post_id ) {
         $frequency = 'always';
     }
 
+    $position = isset( $_POST['cgr_popup_position'] ) ? cgr_popup_sanitize_position( wp_unslash( $_POST['cgr_popup_position'] ) ) : 'center';
+    $width    = isset( $_POST['cgr_popup_width'] ) ? cgr_popup_sanitize_css_size( wp_unslash( $_POST['cgr_popup_width'] ) ) : '';
+    $height   = isset( $_POST['cgr_popup_height'] ) ? cgr_popup_sanitize_css_size( wp_unslash( $_POST['cgr_popup_height'] ) ) : '';
+
     update_post_meta( $post_id, '_cgr_popup_status', $status );
     update_post_meta( $post_id, '_cgr_popup_target_mode', $target_mode );
     update_post_meta( $post_id, '_cgr_popup_target_ids', $target_ids );
@@ -395,6 +486,9 @@ function cgr_save_popup_meta( $post_id ) {
     update_post_meta( $post_id, '_cgr_popup_next_mode', $next_mode );
     update_post_meta( $post_id, '_cgr_popup_next_value', $next_value );
     update_post_meta( $post_id, '_cgr_popup_frequency', $frequency );
+    update_post_meta( $post_id, '_cgr_popup_position', $position );
+    update_post_meta( $post_id, '_cgr_popup_width', $width );
+    update_post_meta( $post_id, '_cgr_popup_height', $height );
 }
 add_action( 'save_post_cgr_popup', 'cgr_save_popup_meta' );
 
@@ -446,6 +540,9 @@ function cgr_render_smart_popups_dashboard() {
             $saved_values['next_value'] = cgr_popup_normalize_datetime( wp_unslash( $_POST['cgr_popup_next_value_fixed'] ?? '' ) );
         }
         $saved_values['frequency'] = sanitize_text_field( wp_unslash( $_POST['cgr_popup_frequency'] ?? 'always' ) );
+        $saved_values['position']  = cgr_popup_sanitize_position( wp_unslash( $_POST['cgr_popup_position'] ?? 'center' ) );
+        $saved_values['width']     = cgr_popup_sanitize_css_size( wp_unslash( $_POST['cgr_popup_width'] ?? '' ) );
+        $saved_values['height']    = cgr_popup_sanitize_css_size( wp_unslash( $_POST['cgr_popup_height'] ?? '' ) );
 
         if ( empty( $title ) ) {
             $status_message = __( 'Please provide a title for the popup.', 'cgr-child' );
@@ -471,6 +568,9 @@ function cgr_render_smart_popups_dashboard() {
                 update_post_meta( $post_id, '_cgr_popup_next_mode', $saved_values['next_mode'] );
                 update_post_meta( $post_id, '_cgr_popup_next_value', $saved_values['next_value'] );
                 update_post_meta( $post_id, '_cgr_popup_frequency', $saved_values['frequency'] );
+                update_post_meta( $post_id, '_cgr_popup_position', $saved_values['position'] );
+                update_post_meta( $post_id, '_cgr_popup_width', $saved_values['width'] );
+                update_post_meta( $post_id, '_cgr_popup_height', $saved_values['height'] );
 
                 $status_message = __( 'Popup saved successfully.', 'cgr-child' );
                 $status_class   = 'notice notice-success';
@@ -717,6 +817,9 @@ function cgr_build_smart_popup_payloads() {
             'next_value'  => $next_value,
             'priority'    => (int) $popup->menu_order,
             'target_mode' => $meta['target_mode'],
+            'position'    => $meta['position'],
+            'width'       => $meta['width'],
+            'height'      => $meta['height'],
         );
 
         $popup_data = apply_filters( 'cgr_smart_popup_payload', $popup_data, $popup->ID, $meta );
@@ -808,6 +911,20 @@ function cgr_render_smart_popups_footer() {
                 continue;
             }
 
+            $position = cgr_popup_sanitize_position( $meta['position'] );
+            $classes  = 'cgr-smart-popup';
+            if ( 'center' !== $position ) {
+                $classes .= ' cgr-smart-popup--' . $position;
+            }
+            $style_vars = array();
+            if ( $meta['width'] ) {
+                $style_vars[] = '--cgr-popup-width: ' . $meta['width'] . ';';
+            }
+            if ( $meta['height'] ) {
+                $style_vars[] = '--cgr-popup-height: ' . $meta['height'] . ';';
+            }
+            $content_style = $style_vars ? ' style="' . esc_attr( implode( ' ', $style_vars ) ) . '"' : '';
+
             $content = '';
             if ( class_exists( '\\Elementor\\Plugin' ) ) {
                 $elementor = \Elementor\Plugin::$instance;
@@ -820,9 +937,9 @@ function cgr_render_smart_popups_footer() {
                 $content = apply_filters( 'the_content', $popup->post_content );
             }
             ?>
-            <div class="cgr-smart-popup" data-cgr-popup-id="<?php echo esc_attr( $popup->ID ); ?>" aria-hidden="true" role="dialog" aria-modal="true">
+            <div class="<?php echo esc_attr( $classes ); ?>" data-cgr-popup-id="<?php echo esc_attr( $popup->ID ); ?>" aria-hidden="true" role="dialog" aria-modal="true">
                 <div class="cgr-smart-popup__backdrop" data-cgr-popup-close></div>
-                <div class="cgr-smart-popup__content" role="document">
+                <div class="cgr-smart-popup__content" role="document"<?php echo $content_style; ?>>
                     <button type="button" class="cgr-smart-popup__close" data-cgr-popup-close aria-label="<?php esc_attr_e( 'Close popup', 'cgr-child' ); ?>">
                         <span aria-hidden="true">&times;</span>
                     </button>

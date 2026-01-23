@@ -19,7 +19,9 @@
 
 .cgr-smart-popup__content {
     position: relative;
-    width: min(960px, 100%);
+    width: var(--cgr-popup-width, 960px);
+    max-width: 100%;
+    height: var(--cgr-popup-height, auto);
     max-height: 90vh;
     background: #fff;
     border-radius: 22px;
@@ -34,6 +36,7 @@
     padding: 32px;
     overflow-y: auto;
     color: var(--text-primary);
+    flex: 1 1 auto;
 }
 
 .cgr-smart-popup__close {
@@ -63,6 +66,16 @@
     position: absolute;
     inset: 0;
     z-index: 0;
+}
+
+.cgr-smart-popup--bottom-right {
+    align-items: flex-end;
+    justify-content: flex-end;
+}
+
+.cgr-smart-popup--bottom-left {
+    align-items: flex-end;
+    justify-content: flex-start;
 }
 
 body.cgr-smart-popup-open {
