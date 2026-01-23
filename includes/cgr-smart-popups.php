@@ -126,7 +126,7 @@ function cgr_popup_format_datetime( $value ) {
         return '';
     }
 
-    return wp_date( 'Y-m-d\TH:i', $timestamp );
+    return wp_date( 'Y-m-d H:i', $timestamp );
 }
 
 /**
@@ -333,11 +333,11 @@ function cgr_render_popup_fields( $meta, $id_prefix ) {
             <h3><?php esc_html_e( 'Temporal Control', 'cgr-child' ); ?></h3>
             <div class="cgr-field">
                 <span><?php esc_html_e( 'Start Date/Time', 'cgr-child' ); ?></span>
-                <input type="datetime-local" id="<?php echo esc_attr( $id_prefix ); ?>start" name="cgr_popup_start" value="<?php echo esc_attr( $start_value ); ?>" class="regular-text">
+                <input type="text" id="<?php echo esc_attr( $id_prefix ); ?>start" name="cgr_popup_start" value="<?php echo esc_attr( $start_value ); ?>" class="regular-text cgr-popup-datetime" autocomplete="off" placeholder="YYYY-MM-DD HH:MM">
             </div>
             <div class="cgr-field">
                 <span><?php esc_html_e( 'Expiry Date/Time', 'cgr-child' ); ?></span>
-                <input type="datetime-local" id="<?php echo esc_attr( $id_prefix ); ?>end" name="cgr_popup_end" value="<?php echo esc_attr( $end_value ); ?>" class="regular-text">
+                <input type="text" id="<?php echo esc_attr( $id_prefix ); ?>end" name="cgr_popup_end" value="<?php echo esc_attr( $end_value ); ?>" class="regular-text cgr-popup-datetime" autocomplete="off" placeholder="YYYY-MM-DD HH:MM">
             </div>
         </div>
 
@@ -357,7 +357,7 @@ function cgr_render_popup_fields( $meta, $id_prefix ) {
             </div>
             <div class="cgr-field cgr-popup-next-fixed" data-cgr-next-fixed>
                 <span><?php esc_html_e( 'Specific date/time', 'cgr-child' ); ?></span>
-                <input type="datetime-local" id="<?php echo esc_attr( $id_prefix ); ?>next-fixed" name="cgr_popup_next_value_fixed" value="<?php echo esc_attr( $next_fixed ); ?>" class="regular-text">
+                <input type="text" id="<?php echo esc_attr( $id_prefix ); ?>next-fixed" name="cgr_popup_next_value_fixed" value="<?php echo esc_attr( $next_fixed ); ?>" class="regular-text cgr-popup-datetime" autocomplete="off" placeholder="YYYY-MM-DD HH:MM">
             </div>
         </div>
 
@@ -760,9 +760,13 @@ function cgr_popup_admin_assets( $hook ) {
 
     $select2_css = apply_filters( 'cgr_popup_select2_css', 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css' );
     $select2_js  = apply_filters( 'cgr_popup_select2_js', 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js' );
+    $flatpickr_css = apply_filters( 'cgr_popup_flatpickr_css', 'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css' );
+    $flatpickr_js  = apply_filters( 'cgr_popup_flatpickr_js', 'https://cdn.jsdelivr.net/npm/flatpickr' );
 
     wp_enqueue_style( 'cgr-popup-select2', $select2_css, array(), '4.1.0-rc.0' );
     wp_enqueue_script( 'cgr-popup-select2', $select2_js, array( 'jquery' ), '4.1.0-rc.0', true );
+    wp_enqueue_style( 'cgr-popup-flatpickr', $flatpickr_css, array(), '4.6.13' );
+    wp_enqueue_script( 'cgr-popup-flatpickr', $flatpickr_js, array(), '4.6.13', true );
 
     wp_enqueue_style(
         'cgr-smart-popups-admin',
@@ -774,7 +778,7 @@ function cgr_popup_admin_assets( $hook ) {
     wp_enqueue_script(
         'cgr-smart-popups-admin',
         $theme_uri . '/assets/js/cgr-smart-popups-admin.js',
-        array( 'jquery', 'cgr-popup-select2' ),
+        array( 'jquery', 'cgr-popup-select2', 'cgr-popup-flatpickr' ),
         filemtime( $theme_dir . '/assets/js/cgr-smart-popups-admin.js' ),
         true
     );

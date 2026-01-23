@@ -17,6 +17,17 @@
             });
         }
 
+        if (window.flatpickr) {
+            $('.cgr-popup-datetime').each(function () {
+                window.flatpickr(this, {
+                    enableTime: true,
+                    time_24hr: true,
+                    dateFormat: 'Y-m-d H:i',
+                    allowInput: false
+                });
+            });
+        }
+
         $('[data-cgr-next-mode]').each(function () {
             var $mode = $(this);
             toggleNextFields($mode);

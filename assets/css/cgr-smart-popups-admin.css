@@ -135,6 +135,36 @@
     margin-top: 8px;
 }
 
+.cgr-popup-datetime {
+    background-color: #fff;
+}
+
+.flatpickr-calendar {
+    border-radius: 16px;
+    box-shadow: 0 18px 36px rgba(12, 29, 23, 0.18);
+    border: 1px solid rgba(30, 68, 50, 0.2);
+}
+
+.flatpickr-months .flatpickr-month {
+    color: var(--forest-dark);
+}
+
+.flatpickr-day.selected,
+.flatpickr-day.startRange,
+.flatpickr-day.endRange,
+.flatpickr-day.selected.inRange,
+.flatpickr-day.startRange.inRange,
+.flatpickr-day.endRange.inRange {
+    background: var(--forest-primary);
+    border-color: var(--forest-primary);
+    color: #fff;
+}
+
+.flatpickr-time input:hover,
+.flatpickr-time input:focus {
+    background: rgba(46, 106, 74, 0.08);
+}
+
 .select2-container--default .select2-selection--multiple {
     border-radius: 16px;
     border: 1px solid rgba(30, 68, 50, 0.2);
