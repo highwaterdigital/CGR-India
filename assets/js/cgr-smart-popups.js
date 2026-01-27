@@ -1,4 +1,25 @@
 (function () {
+    function isDebugEnabled(payload) {
+        return !!(payload && payload.debugEnabled);
+    }
+
+    function logDebug(payload, level, message, data) {
+        if (!isDebugEnabled(payload)) {
+            return;
+        }
+
+        var logger = console;
+        if (!logger || typeof logger[level] !== 'function') {
+            return;
+        }
+
+        if (typeof data !== 'undefined') {
+            logger[level]('[CGR Popups] ' + message, data);
+        } else {
+            logger[level]('[CGR Popups] ' + message);
+        }
+    }
+
     function onReady(callback) {
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', callback);
@@ -93,49 +114,76 @@
         return false;
     }
 
-    function shouldShowPopup(popup, now) {
-        if (!popup || popup.status === 'draft') {
-            return false;
+    function getPopupDecision(popup, now) {
+        var reasons = [];
+        var details = {
+            now: now
+        };
+
+        if (!popup) {
+            reasons.push({ code: 'missing_payload' });
+            return { show: false, reasons: reasons, details: details };
+        }
+
+        if (popup.status === 'draft') {
+            reasons.push({ code: 'status_draft' });
         }
 
         if (popup.start && now < popup.start) {
-            return false;
+            reasons.push({ code: 'start_in_future', start: popup.start });
         }
 
         if (popup.end && now > popup.end) {
-            return false;
+            reasons.push({ code: 'end_in_past', end: popup.end });
         }
 
-        if ((popup.frequency || 'always') === 'always') {
-            return true;
-        }
+        var frequency = popup.frequency || 'always';
+        details.frequency = frequency;
 
         var lastDismissed = getLastDismissed(popup.id);
-        if (isFrequencyBlocked(popup, lastDismissed, now)) {
-            return false;
+        details.lastDismissed = lastDismissed;
+
+        if (frequency !== 'always') {
+            if (isFrequencyBlocked(popup, lastDismissed, now)) {
+                reasons.push({ code: 'frequency_blocked' });
+            }
+
+            var nextScheduled = getNextScheduled(popup, lastDismissed, now);
+            details.nextScheduled = nextScheduled;
+            if (nextScheduled && now < nextScheduled) {
+                reasons.push({ code: 'next_scheduled_in_future', nextScheduled: nextScheduled });
+            }
         }
 
-        var nextScheduled = getNextScheduled(popup, lastDismissed, now);
-        if (nextScheduled && now < nextScheduled) {
-            return false;
-        }
+        return { show: reasons.length === 0, reasons: reasons, details: details };
+    }
 
-        return true;
+    function shouldShowPopup(popup, now) {
+        return getPopupDecision(popup, now).show;
     }
 
     onReady(function () {
         if (!window.cgrSmartPopups || !Array.isArray(window.cgrSmartPopups.popups)) {
+            logDebug(window.cgrSmartPopups, 'warn', 'Payload missing or invalid.', window.cgrSmartPopups);
             return;
         }
 
         var container = document.querySelector('[data-cgr-smart-popups]');
         if (!container) {
+            logDebug(window.cgrSmartPopups, 'warn', 'Popup container not found in DOM.');
             return;
         }
 
         var data = window.cgrSmartPopups;
         var clientNow = Math.floor(Date.now() / 1000);
         var offset = typeof data.now === 'number' ? data.now - clientNow : 0;
+        logDebug(data, 'info', 'Init', {
+            clientNow: clientNow,
+            serverNow: data.now,
+            offset: offset,
+            payloadCount: Array.isArray(data.popups) ? data.popups.length : 0,
+            debug: data.debug || null
+        });
 
         function getNow() {
             return Math.floor(Date.now() / 1000) + offset;
@@ -145,14 +193,47 @@
         container.querySelectorAll('.cgr-smart-popup[data-cgr-popup-id]').forEach(function (popupEl) {
             popupMap[popupEl.getAttribute('data-cgr-popup-id')] = popupEl;
         });
+        logDebug(data, 'info', 'Markup map', { domCount: Object.keys(popupMap).length });
 
+        var decisions = {};
         var queue = data.popups.filter(function (popup) {
-            return popupMap[String(popup.id)] && shouldShowPopup(popup, getNow());
+            var decision = getPopupDecision(popup, getNow());
+            decisions[String(popup.id)] = decision;
+
+            if (!popupMap[String(popup.id)]) {
+                decision.reasons.push({ code: 'missing_markup' });
+            }
+
+            return popupMap[String(popup.id)] && decision.show;
         }).sort(function (a, b) {
             return (a.priority || 0) - (b.priority || 0);
         });
 
         if (!queue.length) {
+            if (isDebugEnabled(data)) {
+                var decisionRows = data.popups.map(function (popup) {
+                    var decision = decisions[String(popup.id)] || getPopupDecision(popup, getNow());
+                    return {
+                        id: popup.id,
+                        status: popup.status,
+                        show: decision.show,
+                        reasons: decision.reasons.map(function (reason) { return reason.code; }).join(', '),
+                        start: popup.start || null,
+                        end: popup.end || null,
+                        frequency: popup.frequency || 'always',
+                        next_mode: popup.next_mode || 'none',
+                        next_value: popup.next_value || null
+                    };
+                });
+
+                if (console && typeof console.table === 'function') {
+                    console.table(decisionRows);
+                } else {
+                    logDebug(data, 'info', 'Popup decisions', decisionRows);
+                }
+            }
+
+            logDebug(data, 'warn', 'No eligible popups after filtering.');
             return;
         }
 
@@ -194,6 +275,7 @@
         function showPopup(popup) {
             var popupEl = popupMap[String(popup.id)];
             if (!popupEl) {
+                logDebug(data, 'warn', 'Popup markup missing for payload.', popup);
                 return;
             }
 
@@ -212,6 +294,7 @@
             }
 
             document.dispatchEvent(new CustomEvent('cgr:popup:shown', { detail: popup }));
+            logDebug(data, 'info', 'Popup shown', popup);
         }
 
         function showNext() {
@@ -223,6 +306,7 @@
             if (nextPopup && shouldShowPopup(nextPopup, getNow())) {
                 showPopup(nextPopup);
             } else {
+                logDebug(data, 'info', 'Skipping popup (no longer eligible).', nextPopup);
                 showNext();
             }
         }
