@@ -17,6 +17,7 @@ define( 'HWD_SS_VERSION', '0.1.0' );
 require_once HWD_SS_DIR . '/includes/helpers.php';
 require_once HWD_SS_DIR . '/includes/class-plugin.php';
 require_once HWD_SS_DIR . '/includes/class-admin.php';
+require_once HWD_SS_DIR . '/includes/class-oauth.php';
 require_once HWD_SS_DIR . '/includes/networks/interface-network.php';
 require_once HWD_SS_DIR . '/includes/networks/class-network-base.php';
 require_once HWD_SS_DIR . '/includes/networks/class-network-x.php';

@@ -27,16 +27,24 @@ function hwd_ss_default_settings() {
                 'api_secret'     => '',
                 'access_token'   => '',
                 'access_secret'  => '',
+                'client_id'      => '',
+                'client_secret'  => '',
             ],
             'facebook' => [
+                'app_id'      => '',
+                'app_secret'  => '',
                 'page_id'      => '',
                 'access_token' => '',
             ],
             'linkedin' => [
+                'client_id'    => '',
+                'client_secret'=> '',
                 'access_token' => '',
                 'author_urn'   => '',
             ],
             'instagram' => [
+                'app_id'       => '',
+                'app_secret'   => '',
                 'access_token' => '',
                 'user_id'      => '',
             ],
@@ -110,4 +118,88 @@ function hwd_ss_log( array $entry ) {
     }
 
     update_option( 'hwd_ss_logs', $logs, false );
+}
+
+function hwd_ss_get_accounts() {
+    $accounts = get_option( 'hwd_ss_accounts', [] );
+    return is_array( $accounts ) ? $accounts : [];
+}
+
+function hwd_ss_save_accounts( array $accounts ) {
+    update_option( 'hwd_ss_accounts', $accounts, false );
+}
+
+function hwd_ss_add_account( $network, array $account ) {
+    $accounts = hwd_ss_get_accounts();
+    if ( ! isset( $accounts[ $network ] ) || ! is_array( $accounts[ $network ] ) ) {
+        $accounts[ $network ] = [];
+    }
+
+    $filtered = [];
+    foreach ( $accounts[ $network ] as $existing ) {
+        if ( ! isset( $existing['account_id'] ) || $existing['account_id'] !== $account['account_id'] ) {
+            $filtered[] = $existing;
+        }
+    }
+
+    $filtered[] = $account;
+    $accounts[ $network ] = $filtered;
+
+    hwd_ss_save_accounts( $accounts );
+}
+
+function hwd_ss_clear_accounts( $network ) {
+    $accounts = hwd_ss_get_accounts();
+    unset( $accounts[ $network ] );
+    hwd_ss_save_accounts( $accounts );
+}
+
+function hwd_ss_set_active_account( $network, $account_id ) {
+    $accounts = hwd_ss_get_accounts();
+    if ( empty( $accounts[ $network ] ) ) {
+        return false;
+    }
+
+    foreach ( $accounts[ $network ] as &$account ) {
+        $account['active'] = isset( $account['account_id'] ) && $account['account_id'] === $account_id;
+    }
+    unset( $account );
+
+    hwd_ss_save_accounts( $accounts );
+    return true;
+}
+
+function hwd_ss_get_active_account( $network ) {
+    $accounts = hwd_ss_get_accounts();
+    if ( empty( $accounts[ $network ] ) ) {
+        return null;
+    }
+
+    foreach ( $accounts[ $network ] as $account ) {
+        if ( ! empty( $account['active'] ) ) {
+            return $account;
+        }
+    }
+
+    return $accounts[ $network ][0] ?? null;
+}
+
+function hwd_ss_has_app_credentials( $network, $settings = null ) {
+    if ( ! $settings ) {
+        $settings = hwd_ss_get_settings();
+    }
+
+    $creds = $settings['credentials'];
+    switch ( $network ) {
+        case 'facebook':
+            return ! empty( $creds['facebook']['app_id'] ) && ! empty( $creds['facebook']['app_secret'] );
+        case 'linkedin':
+            return ! empty( $creds['linkedin']['client_id'] ) && ! empty( $creds['linkedin']['client_secret'] );
+        case 'instagram':
+            return ! empty( $creds['instagram']['app_id'] ) && ! empty( $creds['instagram']['app_secret'] );
+        case 'x':
+            return ! empty( $creds['x']['client_id'] ) && ! empty( $creds['x']['client_secret'] );
+        default:
+            return false;
+    }
 }
