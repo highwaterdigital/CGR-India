@@ -35,4 +35,10 @@ require_once CGR_CHILD_DIR . '/integrations/google-sheets/sheets-config.php';
 // Load WhatsApp API Class
 require_once CGR_CHILD_DIR . '/integrations/whatsapp/class-cgr-whatsapp-api.php';
 
+// Load HWD Social Share integration (theme tool)
+$hwd_ss_path = CGR_CHILD_DIR . '/integrations/HWD Social Share/hwd-social-share.php';
+if ( file_exists( $hwd_ss_path ) && ! defined( 'HWD_SS_VERSION' ) ) {
+    require_once $hwd_ss_path;
+}
+
 // Note: Integration hooks are now loaded via inc/hooks.php
