@@ -9,6 +9,7 @@ class HWD_SS_OAuth {
         add_action( 'admin_post_hwd_ss_connect', [ $this, 'start_connect' ] );
         add_action( 'admin_post_hwd_ss_oauth_callback', [ $this, 'handle_callback' ] );
         add_action( 'admin_post_hwd_ss_disconnect', [ $this, 'disconnect' ] );
+        add_action( 'admin_post_hwd_ss_set_active_account', [ $this, 'set_active_account' ] );
     }
 
     public function start_connect() {
@@ -114,6 +115,41 @@ class HWD_SS_OAuth {
         update_option( 'hwd_ss_settings', $settings, false );
 
         $this->redirect_with_notice( 'disconnected' );
+    }
+
+    public function set_active_account() {
+        if ( ! current_user_can( 'manage_options' ) ) {
+            wp_die( 'Unauthorized' );
+        }
+
+        $network = isset( $_GET['network'] ) ? sanitize_key( $_GET['network'] ) : '';
+        $account_id = isset( $_GET['account_id'] ) ? sanitize_text_field( wp_unslash( $_GET['account_id'] ) ) : '';
+
+        if ( empty( $network ) || empty( $account_id ) ) {
+            $this->redirect_with_notice( 'invalid_state' );
+        }
+
+        check_admin_referer( 'hwd_ss_set_active_' . $network . '_' . $account_id );
+
+        if ( ! hwd_ss_set_active_account( $network, $account_id ) ) {
+            $this->redirect_with_notice( 'connect_failed' );
+        }
+
+        $active_account = hwd_ss_get_active_account( $network );
+        if ( $active_account ) {
+            $settings = hwd_ss_get_settings();
+            if ( $network === 'facebook' ) {
+                $settings['credentials']['facebook']['page_id'] = $active_account['account_id'] ?? '';
+                $settings['credentials']['facebook']['access_token'] = $active_account['access_token'] ?? '';
+            }
+            if ( $network === 'linkedin' ) {
+                $settings['credentials']['linkedin']['author_urn'] = $active_account['urn'] ?? '';
+                $settings['credentials']['linkedin']['access_token'] = $active_account['access_token'] ?? '';
+            }
+            update_option( 'hwd_ss_settings', $settings, false );
+        }
+
+        $this->redirect_with_notice( 'connected' );
     }
 
     private function handle_facebook_callback( $settings, $redirect_uri, $code ) {

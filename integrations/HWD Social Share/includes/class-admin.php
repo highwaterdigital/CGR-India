@@ -219,6 +219,13 @@ class HWD_SS_Admin {
                     if ( $account_id ) {
                         echo '<span class="hwd-ss-meta">ID: ' . esc_html( $account_id ) . '</span>';
                     }
+                    if ( $account_id && empty( $account['active'] ) ) {
+                        $set_active_url = wp_nonce_url(
+                            admin_url( 'admin-post.php?action=hwd_ss_set_active_account&network=' . $network['key'] . '&account_id=' . rawurlencode( $account_id ) ),
+                            'hwd_ss_set_active_' . $network['key'] . '_' . $account_id
+                        );
+                        echo '<a class="button hwd-ss-button-outline" href="' . esc_url( $set_active_url ) . '">Set Active</a>';
+                    }
                     echo '</div>';
                     echo '</div>';
                 }
