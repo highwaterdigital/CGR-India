@@ -9,6 +9,13 @@
         $fixed.toggle(value === 'fixed');
     }
 
+    function toggleTargetFields($mode) {
+        var $card = $mode.closest('.cgr-card');
+        var value = $mode.val();
+        $card.find('[data-cgr-target-ids]').toggle(value === 'specific');
+        $card.find('[data-cgr-target-urls]').toggle(value === 'url');
+    }
+
     $(function () {
         if ($.fn.select2) {
             $('.cgr-popup-select2').select2({
@@ -33,6 +40,14 @@
             toggleNextFields($mode);
             $mode.on('change', function () {
                 toggleNextFields($mode);
+            });
+        });
+
+        $('[data-cgr-target-mode]').each(function () {
+            var $mode = $(this);
+            toggleTargetFields($mode);
+            $mode.on('change', function () {
+                toggleTargetFields($mode);
             });
         });
     });
