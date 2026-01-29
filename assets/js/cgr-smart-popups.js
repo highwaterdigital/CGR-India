@@ -29,8 +29,18 @@
     }
 
     function getCookie(name) {
-        var match = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/([.$?*|{}()\\[\\]\\\\\\/\\+^])/g, '\\$1') + '=([^;]*)'));
-        return match ? decodeURIComponent(match[1]) : null;
+        if (!document.cookie) {
+            return null;
+        }
+        var parts = document.cookie.split('; ');
+        for (var i = 0; i < parts.length; i++) {
+            var pair = parts[i].split('=');
+            var key = pair.shift();
+            if (key === name) {
+                return decodeURIComponent(pair.join('='));
+            }
+        }
+        return null;
     }
 
     function setCookie(name, value, days) {
@@ -184,9 +194,57 @@
             payloadCount: Array.isArray(data.popups) ? data.popups.length : 0,
             debug: data.debug || null
         });
+        logDebug(data, 'info', 'Payload popups', data.popups);
 
         function getNow() {
             return Math.floor(Date.now() / 1000) + offset;
+        }
+
+        var analytics = data.analytics || null;
+
+        function analyticsEnabled() {
+            return !!(analytics && analytics.enabled && analytics.ajaxUrl && analytics.nonce);
+        }
+
+        function sendAnalyticsEvent(popup, eventType, detail) {
+            if (!analyticsEnabled()) {
+                logDebug(data, 'info', 'Analytics disabled.', { event: eventType, popupId: popup ? popup.id : null });
+                return;
+            }
+
+            var body = new FormData();
+            body.append('action', 'cgr_popup_event');
+            body.append('popup_id', String(popup.id || ''));
+            body.append('event', String(eventType || ''));
+            body.append('nonce', String(analytics.nonce || ''));
+
+            if (detail && detail.link) {
+                body.append('link', String(detail.link));
+            }
+
+            var sent = false;
+            if (navigator && typeof navigator.sendBeacon === 'function') {
+                try {
+                    sent = navigator.sendBeacon(analytics.ajaxUrl, body);
+                } catch (error) {
+                    sent = false;
+                }
+            }
+
+            if (!sent && window.fetch) {
+                fetch(analytics.ajaxUrl, {
+                    method: 'POST',
+                    body: body,
+                    credentials: 'same-origin',
+                    keepalive: true
+                }).then(function () {
+                    logDebug(data, 'info', 'Analytics sent (fetch).', { event: eventType, popupId: popup.id });
+                }).catch(function (error) {
+                    logDebug(data, 'warn', 'Analytics failed (fetch).', error);
+                });
+            } else if (sent) {
+                logDebug(data, 'info', 'Analytics sent (beacon).', { event: eventType, popupId: popup.id });
+            }
         }
 
         var popupMap = {};
@@ -204,10 +262,20 @@
                 decision.reasons.push({ code: 'missing_markup' });
             }
 
+            logDebug(data, 'info', 'Popup decision', {
+                id: popup.id,
+                status: popup.status,
+                show: decision.show,
+                reasons: decision.reasons,
+                details: decision.details
+            });
+
             return popupMap[String(popup.id)] && decision.show;
         }).sort(function (a, b) {
             return (a.priority || 0) - (b.priority || 0);
         });
+
+        logDebug(data, 'info', 'Eligible popup queue', { count: queue.length, ids: queue.map(function (popup) { return popup.id; }) });
 
         if (!queue.length) {
             if (isDebugEnabled(data)) {
@@ -222,7 +290,9 @@
                         end: popup.end || null,
                         frequency: popup.frequency || 'always',
                         next_mode: popup.next_mode || 'none',
-                        next_value: popup.next_value || null
+                        next_value: popup.next_value || null,
+                        target_mode: popup.target_mode || 'all',
+                        priority: popup.priority || 0
                     };
                 });
 
@@ -272,6 +342,24 @@
             popupEl.dataset.cgrPopupBound = '1';
         }
 
+        function bindClickTracking(popup, popupEl) {
+            if (popupEl.dataset.cgrPopupClickBound) {
+                return;
+            }
+            popupEl.addEventListener('click', function (event) {
+                var target = event.target;
+                if (!target || !target.closest) {
+                    return;
+                }
+                var link = target.closest('a');
+                if (!link) {
+                    return;
+                }
+                sendAnalyticsEvent(popup, 'click', { link: link.href || '' });
+            });
+            popupEl.dataset.cgrPopupClickBound = '1';
+        }
+
         function showPopup(popup) {
             var popupEl = popupMap[String(popup.id)];
             if (!popupEl) {
@@ -287,6 +375,8 @@
             document.body.classList.add('cgr-smart-popup-open');
 
             bindCloseHandlers(popup, popupEl);
+            bindClickTracking(popup, popupEl);
+            sendAnalyticsEvent(popup, 'impression');
 
             var closeBtn = popupEl.querySelector('.cgr-smart-popup__close');
             if (closeBtn) {

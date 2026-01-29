@@ -209,6 +209,48 @@ function cgr_smart_popups_debug_enabled() {
 }
 
 /**
+ * Fetch popup analytics counts.
+ */
+function cgr_popup_get_analytics_counts( $post_id ) {
+    return array(
+        'impressions' => (int) get_post_meta( $post_id, '_cgr_popup_impressions', true ),
+        'clicks'      => (int) get_post_meta( $post_id, '_cgr_popup_clicks', true ),
+    );
+}
+
+/**
+ * Record popup impression/click analytics via AJAX.
+ */
+function cgr_handle_popup_event() {
+    $nonce = isset( $_POST['nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['nonce'] ) ) : '';
+    if ( ! wp_verify_nonce( $nonce, 'cgr_popup_event' ) ) {
+        wp_send_json_error( array( 'message' => 'invalid_nonce' ), 403 );
+    }
+
+    $popup_id = isset( $_POST['popup_id'] ) ? absint( $_POST['popup_id'] ) : 0;
+    $event    = isset( $_POST['event'] ) ? sanitize_key( wp_unslash( $_POST['event'] ) ) : '';
+
+    if ( ! $popup_id || ! in_array( $event, array( 'impression', 'click' ), true ) ) {
+        wp_send_json_error( array( 'message' => 'invalid_payload' ), 400 );
+    }
+
+    if ( 'cgr_popup' !== get_post_type( $popup_id ) ) {
+        wp_send_json_error( array( 'message' => 'invalid_popup' ), 404 );
+    }
+
+    $meta_key = ( 'click' === $event ) ? '_cgr_popup_clicks' : '_cgr_popup_impressions';
+    $count    = (int) get_post_meta( $popup_id, $meta_key, true );
+    $count++;
+
+    update_post_meta( $popup_id, $meta_key, $count );
+    update_post_meta( $popup_id, $meta_key . '_last', current_time( 'mysql' ) );
+
+    wp_send_json_success( array( 'count' => $count ) );
+}
+add_action( 'wp_ajax_cgr_popup_event', 'cgr_handle_popup_event' );
+add_action( 'wp_ajax_nopriv_cgr_popup_event', 'cgr_handle_popup_event' );
+
+/**
  * Fetch popup meta with defaults applied.
  */
 function cgr_popup_get_meta( $post_id ) {
@@ -710,6 +752,8 @@ function cgr_render_smart_popups_dashboard() {
                         <th><?php esc_html_e( 'Targets', 'cgr-child' ); ?></th>
                         <th><?php esc_html_e( 'Frequency', 'cgr-child' ); ?></th>
                         <th><?php esc_html_e( 'Next Scheduled', 'cgr-child' ); ?></th>
+                        <th><?php esc_html_e( 'Impressions', 'cgr-child' ); ?></th>
+                        <th><?php esc_html_e( 'Clicks', 'cgr-child' ); ?></th>
                         <th><?php esc_html_e( 'Actions', 'cgr-child' ); ?></th>
                     </tr>
                 </thead>
@@ -721,6 +765,7 @@ function cgr_render_smart_popups_dashboard() {
                             $effective_status = cgr_popup_get_effective_status( $popup->ID, $meta );
                             $targets          = $meta['target_ids'];
                             $target_titles    = array();
+                            $analytics        = cgr_popup_get_analytics_counts( $popup->ID );
                             foreach ( $targets as $target_id ) {
                                 $title = get_the_title( $target_id );
                                 if ( $title ) {
@@ -772,6 +817,8 @@ function cgr_render_smart_popups_dashboard() {
                                 </td>
                                 <td><?php echo esc_html( ucfirst( $meta['frequency'] ) ); ?></td>
                                 <td><?php echo esc_html( $next_display ); ?></td>
+                                <td><?php echo esc_html( number_format_i18n( $analytics['impressions'] ) ); ?></td>
+                                <td><?php echo esc_html( number_format_i18n( $analytics['clicks'] ) ); ?></td>
                                 <td>
                                     <a href="<?php echo esc_url( $edit_link ); ?>"><?php esc_html_e( 'Edit', 'cgr-child' ); ?></a>
                                     <?php if ( $elementor_link ) : ?>
@@ -782,7 +829,7 @@ function cgr_render_smart_popups_dashboard() {
                         <?php endforeach; ?>
                     <?php else : ?>
                         <tr>
-                            <td colspan="8"><?php esc_html_e( 'No popups registered yet.', 'cgr-child' ); ?></td>
+                            <td colspan="10"><?php esc_html_e( 'No popups registered yet.', 'cgr-child' ); ?></td>
                         </tr>
                     <?php endif; ?>
                 </tbody>
@@ -933,6 +980,7 @@ function cgr_build_smart_popup_payloads() {
                 'next_value'       => $next_value,
                 'excluded'         => ! empty( $excluded_reasons ),
                 'reasons'          => $excluded_reasons,
+                'analytics'        => cgr_popup_get_analytics_counts( $popup->ID ),
             );
             $debug['popups'][] = $debug_entry;
         }
@@ -1011,6 +1059,11 @@ function cgr_enqueue_smart_popups_assets() {
         'strings' => array(
             'close' => __( 'Close', 'cgr-child' ),
         ),
+    );
+    $payload['analytics'] = array(
+        'enabled' => true,
+        'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+        'nonce'   => wp_create_nonce( 'cgr_popup_event' ),
     );
 
     if ( $debug_enabled ) {
