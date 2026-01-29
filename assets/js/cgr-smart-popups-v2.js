@@ -1,0 +1,470 @@
+(function () {
+    function hasDebugQuery() {
+        try {
+            if (window && window.location && window.location.search) {
+                if (typeof URLSearchParams === 'function') {
+                    return new URLSearchParams(window.location.search).has('cgr-popup-debug');
+                }
+                return window.location.search.indexOf('cgr-popup-debug') !== -1;
+            }
+        } catch (error) {
+            return false;
+        }
+        return false;
+    }
+
+    var debugOverride = hasDebugQuery() || window.cgrPopupDebug === true;
+
+    function isDebugEnabled(payload) {
+        return debugOverride || !!(payload && payload.debugEnabled);
+    }
+
+    function logDebug(payload, level, message, data) {
+        if (!isDebugEnabled(payload)) {
+            return;
+        }
+
+        var logger = console;
+        if (!logger || typeof logger[level] !== 'function') {
+            return;
+        }
+
+        if (typeof data !== 'undefined') {
+            logger[level]('[CGR Popups] ' + message, data);
+        } else {
+            logger[level]('[CGR Popups] ' + message);
+        }
+    }
+
+    if (debugOverride && console && typeof console.info === 'function') {
+        console.info('[CGR Popups] Script loaded. Debug override enabled.');
+    }
+
+    function onReady(callback) {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', callback);
+        } else {
+            callback();
+        }
+    }
+
+    function getCookie(name) {
+        if (!document.cookie) {
+            return null;
+        }
+        var parts = document.cookie.split('; ');
+        for (var i = 0; i < parts.length; i++) {
+            var pair = parts[i].split('=');
+            var key = pair.shift();
+            if (key === name) {
+                return decodeURIComponent(pair.join('='));
+            }
+        }
+        return null;
+    }
+
+    function setCookie(name, value, days) {
+        var expires = '';
+        if (days) {
+            var date = new Date();
+            date.setTime(date.getTime() + days * 864e5);
+            expires = '; expires=' + date.toUTCString();
+        }
+        document.cookie = name + '=' + encodeURIComponent(value) + expires + '; path=/';
+    }
+
+    function getSessionFlag(key) {
+        try {
+            return sessionStorage.getItem(key) === '1';
+        } catch (error) {
+            return false;
+        }
+    }
+
+    function setSessionFlag(key) {
+        try {
+            sessionStorage.setItem(key, '1');
+        } catch (error) {
+            return;
+        }
+    }
+
+    function readPayloadFromDom() {
+        var node = document.querySelector('script[data-cgr-smart-popups-payload]');
+        if (!node) {
+            return null;
+        }
+        var raw = node.textContent || node.innerText || '';
+        if (!raw) {
+            return null;
+        }
+        try {
+            return JSON.parse(raw);
+        } catch (error) {
+            return null;
+        }
+    }
+
+    function getLastDismissed(popupId) {
+        var value = getCookie('cgr_popup_dismissed_' + popupId);
+        return value ? parseInt(value, 10) : null;
+    }
+
+    function getNextScheduled(popup, lastDismissed, now) {
+        if (window.cgrSmartPopupsHooks && typeof window.cgrSmartPopupsHooks.nextScheduled === 'function') {
+            var override = window.cgrSmartPopupsHooks.nextScheduled(popup, lastDismissed, now);
+            if (typeof override === 'number') {
+                return override;
+            }
+        }
+
+        if (popup.next_mode === 'interval' && popup.next_value && lastDismissed) {
+            return lastDismissed + popup.next_value * 86400;
+        }
+
+        if (popup.next_mode === 'fixed' && popup.next_value) {
+            return popup.next_value;
+        }
+
+        return null;
+    }
+
+    function isFrequencyBlocked(popup, lastDismissed, now) {
+        var frequency = popup.frequency || 'always';
+        var sessionKey = 'cgr_popup_session_' + popup.id;
+
+        if (frequency === 'session') {
+            return getSessionFlag(sessionKey);
+        }
+
+        if (!lastDismissed) {
+            return false;
+        }
+
+        if (frequency === 'once') {
+            return true;
+        }
+
+        var diff = now - lastDismissed;
+
+        if (frequency === 'day') {
+            return diff < 86400;
+        }
+        if (frequency === 'week') {
+            return diff < 604800;
+        }
+        if (frequency === 'month') {
+            return diff < 2592000;
+        }
+
+        return false;
+    }
+
+    function getPopupDecision(popup, now) {
+        var reasons = [];
+        var details = {
+            now: now
+        };
+
+        if (window.cgrSmartPopups && window.cgrSmartPopups.force) {
+            return { show: true, reasons: [{ code: 'forced' }], details: { now: now, forced: true } };
+        }
+
+        if (!popup) {
+            reasons.push({ code: 'missing_payload' });
+            return { show: false, reasons: reasons, details: details };
+        }
+
+        if (popup.status === 'draft') {
+            reasons.push({ code: 'status_draft' });
+        }
+
+        if (popup.start && now < popup.start) {
+            reasons.push({ code: 'start_in_future', start: popup.start });
+        }
+
+        if (popup.end && now > popup.end) {
+            reasons.push({ code: 'end_in_past', end: popup.end });
+        }
+
+        var frequency = popup.frequency || 'always';
+        details.frequency = frequency;
+
+        var lastDismissed = getLastDismissed(popup.id);
+        details.lastDismissed = lastDismissed;
+
+        if (frequency !== 'always') {
+            if (isFrequencyBlocked(popup, lastDismissed, now)) {
+                reasons.push({ code: 'frequency_blocked' });
+            }
+
+            var nextScheduled = getNextScheduled(popup, lastDismissed, now);
+            details.nextScheduled = nextScheduled;
+            if (nextScheduled && now < nextScheduled) {
+                reasons.push({ code: 'next_scheduled_in_future', nextScheduled: nextScheduled });
+            }
+        }
+
+        return { show: reasons.length === 0, reasons: reasons, details: details };
+    }
+
+    function shouldShowPopup(popup, now) {
+        return getPopupDecision(popup, now).show;
+    }
+
+    onReady(function () {
+        var payload = window.cgrSmartPopups;
+        if (!payload || !Array.isArray(payload.popups)) {
+            var domPayload = readPayloadFromDom();
+            if (domPayload && Array.isArray(domPayload.popups)) {
+                payload = domPayload;
+                window.cgrSmartPopups = domPayload;
+                if (debugOverride && console && typeof console.info === 'function') {
+                    console.info('[CGR Popups] Payload loaded from DOM fallback.');
+                }
+            }
+        }
+
+        if (!payload || !Array.isArray(payload.popups)) {
+            if (debugOverride && console && typeof console.warn === 'function') {
+                console.warn('[CGR Popups] Payload missing or invalid.', payload);
+            }
+            return;
+        }
+
+        var container = document.querySelector('[data-cgr-smart-popups]');
+        if (!container) {
+            logDebug(payload, 'warn', 'Popup container not found in DOM.');
+            return;
+        }
+
+        var data = payload;
+        var clientNow = Math.floor(Date.now() / 1000);
+        var offset = typeof data.now === 'number' ? data.now - clientNow : 0;
+        logDebug(data, 'info', 'Init', {
+            clientNow: clientNow,
+            serverNow: data.now,
+            offset: offset,
+            payloadCount: Array.isArray(data.popups) ? data.popups.length : 0,
+            debug: data.debug || null,
+            force: !!data.force
+        });
+        logDebug(data, 'info', 'Payload popups', data.popups);
+
+        function getNow() {
+            return Math.floor(Date.now() / 1000) + offset;
+        }
+
+        var analytics = data.analytics || null;
+
+        function analyticsEnabled() {
+            return !!(analytics && analytics.enabled && analytics.ajaxUrl && analytics.nonce);
+        }
+
+        function sendAnalyticsEvent(popup, eventType, detail) {
+            if (!analyticsEnabled()) {
+                logDebug(data, 'info', 'Analytics disabled.', { event: eventType, popupId: popup ? popup.id : null });
+                return;
+            }
+
+            var body = new FormData();
+            body.append('action', 'cgr_popup_event');
+            body.append('popup_id', String(popup.id || ''));
+            body.append('event', String(eventType || ''));
+            body.append('nonce', String(analytics.nonce || ''));
+
+            if (detail && detail.link) {
+                body.append('link', String(detail.link));
+            }
+
+            var sent = false;
+            if (navigator && typeof navigator.sendBeacon === 'function') {
+                try {
+                    sent = navigator.sendBeacon(analytics.ajaxUrl, body);
+                } catch (error) {
+                    sent = false;
+                }
+            }
+
+            if (!sent && window.fetch) {
+                fetch(analytics.ajaxUrl, {
+                    method: 'POST',
+                    body: body,
+                    credentials: 'same-origin',
+                    keepalive: true
+                }).then(function () {
+                    logDebug(data, 'info', 'Analytics sent (fetch).', { event: eventType, popupId: popup.id });
+                }).catch(function (error) {
+                    logDebug(data, 'warn', 'Analytics failed (fetch).', error);
+                });
+            } else if (sent) {
+                logDebug(data, 'info', 'Analytics sent (beacon).', { event: eventType, popupId: popup.id });
+            }
+        }
+
+        var popupMap = {};
+        container.querySelectorAll('.cgr-smart-popup[data-cgr-popup-id]').forEach(function (popupEl) {
+            popupMap[popupEl.getAttribute('data-cgr-popup-id')] = popupEl;
+        });
+        logDebug(data, 'info', 'Markup map', { domCount: Object.keys(popupMap).length });
+
+        var decisions = {};
+        var queue = data.popups.filter(function (popup) {
+            var decision = getPopupDecision(popup, getNow());
+            decisions[String(popup.id)] = decision;
+
+            if (!popupMap[String(popup.id)]) {
+                decision.reasons.push({ code: 'missing_markup' });
+            }
+
+            logDebug(data, 'info', 'Popup decision', {
+                id: popup.id,
+                status: popup.status,
+                show: decision.show,
+                reasons: decision.reasons,
+                details: decision.details
+            });
+
+            return popupMap[String(popup.id)] && decision.show;
+        }).sort(function (a, b) {
+            return (a.priority || 0) - (b.priority || 0);
+        });
+
+        logDebug(data, 'info', 'Eligible popup queue', { count: queue.length, ids: queue.map(function (popup) { return popup.id; }) });
+
+        if (!queue.length) {
+            if (isDebugEnabled(data)) {
+                var decisionRows = data.popups.map(function (popup) {
+                    var decision = decisions[String(popup.id)] || getPopupDecision(popup, getNow());
+                    return {
+                        id: popup.id,
+                        status: popup.status,
+                        show: decision.show,
+                        reasons: decision.reasons.map(function (reason) { return reason.code; }).join(', '),
+                        start: popup.start || null,
+                        end: popup.end || null,
+                        frequency: popup.frequency || 'always',
+                        next_mode: popup.next_mode || 'none',
+                        next_value: popup.next_value || null,
+                        target_mode: popup.target_mode || 'all',
+                        priority: popup.priority || 0
+                    };
+                });
+
+                if (console && typeof console.table === 'function') {
+                    console.table(decisionRows);
+                } else {
+                    logDebug(data, 'info', 'Popup decisions', decisionRows);
+                }
+            }
+
+            logDebug(data, 'warn', 'No eligible popups after filtering.');
+            return;
+        }
+
+        var activePopup = null;
+        var lastFocus = null;
+
+        function closePopup(popup, popupEl) {
+            popupEl.classList.remove('is-open');
+            popupEl.setAttribute('aria-hidden', 'true');
+            document.body.classList.remove('cgr-smart-popup-open');
+
+            var now = getNow();
+            var dismissKey = 'cgr_popup_dismissed_' + popup.id;
+            setCookie(dismissKey, String(now), 365);
+            setSessionFlag('cgr_popup_session_' + popup.id);
+
+            if (lastFocus && typeof lastFocus.focus === 'function') {
+                lastFocus.focus();
+            }
+
+            document.dispatchEvent(new CustomEvent('cgr:popup:dismissed', { detail: popup }));
+
+            activePopup = null;
+            showNext();
+        }
+
+        function bindCloseHandlers(popup, popupEl) {
+            if (popupEl.dataset.cgrPopupBound) {
+                return;
+            }
+            popupEl.querySelectorAll('[data-cgr-popup-close]').forEach(function (closeEl) {
+                closeEl.addEventListener('click', function () {
+                    closePopup(popup, popupEl);
+                });
+            });
+            popupEl.dataset.cgrPopupBound = '1';
+        }
+
+        function bindClickTracking(popup, popupEl) {
+            if (popupEl.dataset.cgrPopupClickBound) {
+                return;
+            }
+            popupEl.addEventListener('click', function (event) {
+                var target = event.target;
+                if (!target || !target.closest) {
+                    return;
+                }
+                var link = target.closest('a');
+                if (!link) {
+                    return;
+                }
+                sendAnalyticsEvent(popup, 'click', { link: link.href || '' });
+            });
+            popupEl.dataset.cgrPopupClickBound = '1';
+        }
+
+        function showPopup(popup) {
+            var popupEl = popupMap[String(popup.id)];
+            if (!popupEl) {
+                logDebug(data, 'warn', 'Popup markup missing for payload.', popup);
+                return;
+            }
+
+            activePopup = popup;
+            lastFocus = document.activeElement;
+
+            popupEl.classList.add('is-open');
+            popupEl.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('cgr-smart-popup-open');
+
+            bindCloseHandlers(popup, popupEl);
+            bindClickTracking(popup, popupEl);
+            sendAnalyticsEvent(popup, 'impression');
+
+            var closeBtn = popupEl.querySelector('.cgr-smart-popup__close');
+            if (closeBtn) {
+                closeBtn.focus();
+            }
+
+            document.dispatchEvent(new CustomEvent('cgr:popup:shown', { detail: popup }));
+            logDebug(data, 'info', 'Popup shown', popup);
+        }
+
+        function showNext() {
+            if (activePopup || !queue.length) {
+                return;
+            }
+
+            var nextPopup = queue.shift();
+            if (nextPopup && shouldShowPopup(nextPopup, getNow())) {
+                showPopup(nextPopup);
+            } else {
+                logDebug(data, 'info', 'Skipping popup (no longer eligible).', nextPopup);
+                showNext();
+            }
+        }
+
+        document.addEventListener('keyup', function (event) {
+            if (event.key === 'Escape' && activePopup) {
+                var popupEl = popupMap[String(activePopup.id)];
+                if (popupEl) {
+                    closePopup(activePopup, popupEl);
+                }
+            }
+        });
+
+        showNext();
+    });
+})();

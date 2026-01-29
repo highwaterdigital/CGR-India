@@ -1077,9 +1077,9 @@ function cgr_enqueue_smart_popups_assets() {
 
     wp_enqueue_script(
         'cgr-smart-popups',
-        $theme_uri . '/assets/js/cgr-smart-popups.js',
+        $theme_uri . '/assets/js/cgr-smart-popups-v2.js',
         array(),
-        filemtime( $theme_dir . '/assets/js/cgr-smart-popups.js' ),
+        filemtime( $theme_dir . '/assets/js/cgr-smart-popups-v2.js' ),
         true
     );
 
@@ -1149,6 +1149,21 @@ function cgr_render_smart_popups_footer() {
     ?>
     <?php if ( $payload_json ) : ?>
         <script type="application/json" data-cgr-smart-popups-payload><?php echo $payload_json; ?></script>
+    <?php endif; ?>
+    <?php if ( isset( $_GET['cgr-popup-debug'] ) && current_user_can( 'manage_options' ) ) : ?>
+        <script>
+            (function () {
+                try {
+                    console.info('[CGR Popups] Footer debug script loaded.');
+                    var payloadNode = document.querySelector('script[data-cgr-smart-popups-payload]');
+                    console.info('[CGR Popups] Payload node present:', !!payloadNode);
+                    var container = document.querySelector('[data-cgr-smart-popups]');
+                    console.info('[CGR Popups] Container present:', !!container);
+                } catch (error) {
+                    // No-op: avoid breaking the page if console is unavailable.
+                }
+            })();
+        </script>
     <?php endif; ?>
     <div class="cgr-smart-popups" data-cgr-smart-popups>
         <?php foreach ( $popups as $popup ) : ?>
