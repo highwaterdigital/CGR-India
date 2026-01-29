@@ -2527,6 +2527,7 @@ function cgr_litespeed_js_exclusions( $excludes ) {
     $excludes[] = 'slick';            // Sliders
     $excludes[] = 'elementor-gallery'; // If using Elementor
     $excludes[] = 'wc-single-product'; // WooCommerce galleries
+    $excludes[] = 'cgr-smart-popups';  // Ensure popups script is not delayed/combined
     
     return $excludes;
 }

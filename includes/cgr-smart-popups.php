@@ -209,6 +209,21 @@ function cgr_smart_popups_debug_enabled() {
 }
 
 /**
+ * Determine if Smart Popups should force-render for debugging.
+ */
+function cgr_smart_popups_force_enabled() {
+    if ( defined( 'CGR_SMART_POPUPS_FORCE' ) && CGR_SMART_POPUPS_FORCE ) {
+        return true;
+    }
+
+    if ( isset( $_GET['cgr-popup-force'] ) && current_user_can( 'manage_options' ) ) {
+        return true;
+    }
+
+    return false;
+}
+
+/**
  * Fetch popup analytics counts.
  */
 function cgr_popup_get_analytics_counts( $post_id ) {
@@ -895,19 +910,29 @@ add_action( 'admin_enqueue_scripts', 'cgr_popup_admin_assets' );
 function cgr_build_smart_popup_payloads() {
     $now = current_time( 'timestamp' );
     $debug_enabled = cgr_smart_popups_debug_enabled();
+    $force_enabled = cgr_smart_popups_force_enabled();
     $current_id = get_queried_object_id();
+    if ( ! $current_id ) {
+        if ( is_front_page() ) {
+            $current_id = (int) get_option( 'page_on_front' );
+        }
+        if ( ! $current_id && is_home() ) {
+            $current_id = (int) get_option( 'page_for_posts' );
+        }
+    }
     $debug = null;
 
     if ( $debug_enabled ) {
-        $debug = array(
-            'generated_at' => current_time( 'mysql' ),
-            'now'          => $now,
-            'current_id'   => $current_id,
-            'counts'       => array(
-                'total'    => 0,
-                'included' => 0,
-                'excluded' => 0,
-            ),
+            $debug = array(
+                'generated_at' => current_time( 'mysql' ),
+                'now'          => $now,
+                'current_id'   => $current_id,
+                'force'        => $force_enabled,
+                'counts'       => array(
+                    'total'    => 0,
+                    'included' => 0,
+                    'excluded' => 0,
+                ),
             'popups'       => array(),
         );
     }
@@ -981,6 +1006,7 @@ function cgr_build_smart_popup_payloads() {
                 'excluded'         => ! empty( $excluded_reasons ),
                 'reasons'          => $excluded_reasons,
                 'analytics'        => cgr_popup_get_analytics_counts( $popup->ID ),
+                'forced'           => $force_enabled,
             );
             $debug['popups'][] = $debug_entry;
         }
@@ -989,7 +1015,9 @@ function cgr_build_smart_popup_payloads() {
             if ( $debug_enabled ) {
                 $debug['counts']['excluded']++;
             }
-            continue;
+            if ( ! $force_enabled ) {
+                continue;
+            }
         }
 
         $popup_data = array(
@@ -1031,7 +1059,9 @@ function cgr_enqueue_smart_popups_assets() {
 
     $payloads = cgr_build_smart_popup_payloads();
     $debug_enabled = cgr_smart_popups_debug_enabled();
-    if ( empty( $payloads ) && ! $debug_enabled ) {
+    $force_enabled = cgr_smart_popups_force_enabled();
+    $debug_query = isset( $_GET['cgr-popup-debug'] );
+    if ( empty( $payloads ) && ! $debug_enabled && ! $force_enabled && ! $debug_query ) {
         return;
     }
 
@@ -1065,6 +1095,7 @@ function cgr_enqueue_smart_popups_assets() {
         'ajaxUrl' => admin_url( 'admin-ajax.php' ),
         'nonce'   => wp_create_nonce( 'cgr_popup_event' ),
     );
+    $payload['force'] = $force_enabled;
 
     if ( $debug_enabled ) {
         $payload['debugEnabled'] = true;
@@ -1074,9 +1105,13 @@ function cgr_enqueue_smart_popups_assets() {
     $payload = apply_filters( 'cgr_smart_popups_payload', $payload, $payloads );
 
     wp_localize_script( 'cgr-smart-popups', 'cgrSmartPopups', $payload );
+    $GLOBALS['cgr_smart_popups_payload'] = $payload;
 
     if ( ! empty( $payloads ) ) {
         $GLOBALS['cgr_smart_popups_payloads'] = $payloads;
+    }
+    if ( $force_enabled ) {
+        $GLOBALS['cgr_smart_popups_force'] = true;
     }
 }
 add_action( 'wp_enqueue_scripts', 'cgr_enqueue_smart_popups_assets' );
@@ -1090,6 +1125,7 @@ function cgr_render_smart_popups_footer() {
     }
 
     $payloads  = $GLOBALS['cgr_smart_popups_payloads'];
+    $force_enabled = ! empty( $GLOBALS['cgr_smart_popups_force'] );
     $popup_ids = array_filter( array_map( 'absint', wp_list_pluck( $payloads, 'id' ) ) );
     if ( ! $popup_ids ) {
         return;
@@ -1106,13 +1142,20 @@ function cgr_render_smart_popups_footer() {
     if ( ! $popups ) {
         return;
     }
+    $payload_json = '';
+    if ( ! empty( $GLOBALS['cgr_smart_popups_payload'] ) ) {
+        $payload_json = wp_json_encode( $GLOBALS['cgr_smart_popups_payload'] );
+    }
     ?>
+    <?php if ( $payload_json ) : ?>
+        <script type="application/json" data-cgr-smart-popups-payload><?php echo $payload_json; ?></script>
+    <?php endif; ?>
     <div class="cgr-smart-popups" data-cgr-smart-popups>
         <?php foreach ( $popups as $popup ) : ?>
             <?php
             $meta             = cgr_popup_get_meta( $popup->ID );
             $effective_status = cgr_popup_get_effective_status( $popup->ID, $meta );
-            if ( 'expired' === $effective_status || 'draft' === $effective_status ) {
+            if ( ! $force_enabled && ( 'expired' === $effective_status || 'draft' === $effective_status ) ) {
                 continue;
             }
 

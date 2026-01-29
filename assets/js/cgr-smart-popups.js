@@ -1,6 +1,22 @@
 (function () {
+    function hasDebugQuery() {
+        try {
+            if (window && window.location && window.location.search) {
+                if (typeof URLSearchParams === 'function') {
+                    return new URLSearchParams(window.location.search).has('cgr-popup-debug');
+                }
+                return window.location.search.indexOf('cgr-popup-debug') !== -1;
+            }
+        } catch (error) {
+            return false;
+        }
+        return false;
+    }
+
+    var debugOverride = hasDebugQuery() || window.cgrPopupDebug === true;
+
     function isDebugEnabled(payload) {
-        return !!(payload && payload.debugEnabled);
+        return debugOverride || !!(payload && payload.debugEnabled);
     }
 
     function logDebug(payload, level, message, data) {
@@ -18,6 +34,10 @@
         } else {
             logger[level]('[CGR Popups] ' + message);
         }
+    }
+
+    if (debugOverride && console && typeof console.info === 'function') {
+        console.info('[CGR Popups] Script loaded. Debug override enabled.');
     }
 
     function onReady(callback) {
@@ -66,6 +86,22 @@
             sessionStorage.setItem(key, '1');
         } catch (error) {
             return;
+        }
+    }
+
+    function readPayloadFromDom() {
+        var node = document.querySelector('script[data-cgr-smart-popups-payload]');
+        if (!node) {
+            return null;
+        }
+        var raw = node.textContent || node.innerText || '';
+        if (!raw) {
+            return null;
+        }
+        try {
+            return JSON.parse(raw);
+        } catch (error) {
+            return null;
         }
     }
 
@@ -130,6 +166,10 @@
             now: now
         };
 
+        if (window.cgrSmartPopups && window.cgrSmartPopups.force) {
+            return { show: true, reasons: [{ code: 'forced' }], details: { now: now, forced: true } };
+        }
+
         if (!popup) {
             reasons.push({ code: 'missing_payload' });
             return { show: false, reasons: reasons, details: details };
@@ -173,18 +213,32 @@
     }
 
     onReady(function () {
-        if (!window.cgrSmartPopups || !Array.isArray(window.cgrSmartPopups.popups)) {
-            logDebug(window.cgrSmartPopups, 'warn', 'Payload missing or invalid.', window.cgrSmartPopups);
+        var payload = window.cgrSmartPopups;
+        if (!payload || !Array.isArray(payload.popups)) {
+            var domPayload = readPayloadFromDom();
+            if (domPayload && Array.isArray(domPayload.popups)) {
+                payload = domPayload;
+                window.cgrSmartPopups = domPayload;
+                if (debugOverride && console && typeof console.info === 'function') {
+                    console.info('[CGR Popups] Payload loaded from DOM fallback.');
+                }
+            }
+        }
+
+        if (!payload || !Array.isArray(payload.popups)) {
+            if (debugOverride && console && typeof console.warn === 'function') {
+                console.warn('[CGR Popups] Payload missing or invalid.', payload);
+            }
             return;
         }
 
         var container = document.querySelector('[data-cgr-smart-popups]');
         if (!container) {
-            logDebug(window.cgrSmartPopups, 'warn', 'Popup container not found in DOM.');
+            logDebug(payload, 'warn', 'Popup container not found in DOM.');
             return;
         }
 
-        var data = window.cgrSmartPopups;
+        var data = payload;
         var clientNow = Math.floor(Date.now() / 1000);
         var offset = typeof data.now === 'number' ? data.now - clientNow : 0;
         logDebug(data, 'info', 'Init', {
@@ -192,7 +246,8 @@
             serverNow: data.now,
             offset: offset,
             payloadCount: Array.isArray(data.popups) ? data.popups.length : 0,
-            debug: data.debug || null
+            debug: data.debug || null,
+            force: !!data.force
         });
         logDebug(data, 'info', 'Payload popups', data.popups);
 
